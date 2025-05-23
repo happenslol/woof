@@ -1,0 +1,11 @@
+base = Hello World!
+
+heading.title = Woof
+heading.subtitle = The Woof Project
+
+button.label = Click Me!
+
+subscope.heading.title = Subtitle
+
+something.containing.components = This is a {string} with a component in it: {component}
+something.containing.values = This is a string with a value in it: {value}
