@@ -1,0 +1,112 @@
+# Global messages
+title = "Welcome to Our Application"
+description = "A powerful tool for managing your daily tasks"
+loading = "Loading..."
+error = "Something went wrong"
+
+# Navigation section
+[nav]
+home = "Home"
+about = "About"
+contact = "Contact"
+settings = "Settings"
+profile = "Profile"
+
+# User interface messages
+[ui]
+save = "Save"
+cancel = "Cancel"
+delete = "Delete"
+edit = "Edit"
+confirm = "Confirm"
+back = "Back"
+next = "Next"
+previous = "Previous"
+
+# User profile section
+[profile]
+title = "User Profile"
+greeting = "Hello, {name}!"
+last_login = "Last login: {date}"
+account_created = "Account created on {date:date}"
+messages_count = "You have {count:number} unread messages"
+storage_usage = "Using {used:number} MB of {total:number} MB storage"
+
+# Profile settings subsection
+[profile.settings]
+title = "Profile Settings"
+change_password = "Change Password"
+notification_preferences = "Notification Preferences"
+privacy_settings = "Privacy Settings"
+account_deletion = "Delete Account"
+
+# Profile advanced settings
+[profile.settings.advanced]
+title = "Advanced Settings"
+data_export = "Export Your Data"
+api_access = "API Access"
+developer_mode = "Developer Mode"
+debug_info = "Debug Information"
+
+# Dashboard section
+[dashboard]
+title = "Dashboard"
+welcome_back = "Welcome back, {username}!"
+stats_overview = "Statistics Overview"
+recent_activity = "Recent Activity"
+quick_actions = "Quick Actions"
+
+# Dashboard widgets
+[dashboard.widgets]
+weather = "Weather"
+calendar = "Calendar"
+tasks = "Tasks"
+notifications = "Notifications"
+
+# Dashboard analytics
+[dashboard.analytics]
+title = "Analytics"
+visitors_today = "Visitors today: {count:number}"
+revenue_this_month = "Revenue this month: ${amount:number}"
+conversion_rate = "Conversion rate: {rate:number}%"
+performance_score = "Performance score: {score:number}/100"
+
+# Task management
+[tasks]
+title = "Task Management"
+create_task = "Create New Task"
+all_tasks = "All Tasks"
+completed_tasks = "Completed Tasks"
+pending_tasks = "Pending Tasks"
+overdue_tasks = "Overdue Tasks"
+
+# Task details
+[tasks.details]
+title = "Task Details"
+due_date = "Due: {date:date}"
+assigned_to = "Assigned to: {user}"
+priority = "Priority: {level}"
+status = "Status: {status}"
+created_by = "Created by {author} on {date:date}"
+estimated_time = "Estimated time: {hours:number} hours"
+
+# Notifications
+[notifications]
+title = "Notifications"
+mark_all_read = "Mark All as Read"
+clear_all = "Clear All"
+no_notifications = "No new notifications"
+task_assigned = "{assignee} assigned you a task: {task_title}"
+task_completed = "Task '{task_title}' was completed by {user}"
+deadline_approaching = "Deadline approaching for '{task_title}' - due in {days:number} days"
+system_maintenance = "System maintenance scheduled for {date:date} at {time}"
+
+# Error messages
+[errors]
+network_error = "Network connection failed"
+permission_denied = "Permission denied"
+file_not_found = "File not found"
+invalid_input = "Invalid input provided"
+session_expired = "Your session has expired. Please log in again."
+quota_exceeded = "You have exceeded your quota of {limit:number} items"
+validation_failed = "Validation failed: {field} is required" 

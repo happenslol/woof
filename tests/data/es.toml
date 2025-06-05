@@ -1,0 +1,112 @@
+# Mensajes globales
+title = "Bienvenido a nuestra aplicación"
+description = "Una herramienta poderosa para gestionar tus tareas diarias"
+loading = "Cargando..."
+error = "Algo salió mal"
+
+# Sección de navegación
+[nav]
+home = "Inicio"
+about = "Acerca de"
+contact = "Contacto"
+settings = "Configuración"
+profile = "Perfil"
+
+# Mensajes de interfaz de usuario
+[ui]
+save = "Guardar"
+cancel = "Cancelar"
+delete = "Eliminar"
+edit = "Editar"
+confirm = "Confirmar"
+back = "Atrás"
+next = "Siguiente"
+previous = "Anterior"
+
+# Sección de perfil de usuario
+[profile]
+title = "Perfil de Usuario"
+greeting = "¡Hola, {name}!"
+last_login = "Último acceso: {date}"
+account_created = "Cuenta creada el {date:date}"
+messages_count = "Tienes {count:number} mensajes sin leer"
+storage_usage = "Usando {used:number} MB de {total:number} MB de almacenamiento"
+
+# Subsección de configuración de perfil
+[profile.settings]
+title = "Configuración del Perfil"
+change_password = "Cambiar Contraseña"
+notification_preferences = "Preferencias de Notificación"
+privacy_settings = "Configuración de Privacidad"
+account_deletion = "Eliminar Cuenta"
+
+# Configuración avanzada del perfil
+[profile.settings.advanced]
+title = "Configuración Avanzada"
+data_export = "Exportar Tus Datos"
+api_access = "Acceso a la API"
+developer_mode = "Modo Desarrollador"
+debug_info = "Información de Depuración"
+
+# Sección del panel de control
+[dashboard]
+title = "Panel de Control"
+welcome_back = "¡Bienvenido de vuelta, {username}!"
+stats_overview = "Resumen de Estadísticas"
+recent_activity = "Actividad Reciente"
+quick_actions = "Acciones Rápidas"
+
+# Widgets del panel de control
+[dashboard.widgets]
+weather = "Clima"
+calendar = "Calendario"
+tasks = "Tareas"
+notifications = "Notificaciones"
+
+# Analíticas del panel de control
+[dashboard.analytics]
+title = "Analíticas"
+visitors_today = "Visitantes hoy: {count:number}"
+revenue_this_month = "Ingresos este mes: ${amount:number}"
+conversion_rate = "Tasa de conversión: {rate:number}%"
+performance_score = "Puntuación de rendimiento: {score:number}/100"
+
+# Gestión de tareas
+[tasks]
+title = "Gestión de Tareas"
+create_task = "Crear Nueva Tarea"
+all_tasks = "Todas las Tareas"
+completed_tasks = "Tareas Completadas"
+pending_tasks = "Tareas Pendientes"
+overdue_tasks = "Tareas Vencidas"
+
+# Detalles de la tarea
+[tasks.details]
+title = "Detalles de la Tarea"
+due_date = "Vence: {date:date}"
+assigned_to = "Asignado a: {user}"
+priority = "Prioridad: {level}"
+status = "Estado: {status}"
+created_by = "Creado por {author} el {date:date}"
+estimated_time = "Tiempo estimado: {hours:number} horas"
+
+# Notificaciones
+[notifications]
+title = "Notificaciones"
+mark_all_read = "Marcar Todas como Leídas"
+clear_all = "Limpiar Todas"
+no_notifications = "No hay notificaciones nuevas"
+task_assigned = "{assignee} te asignó una tarea: {task_title}"
+task_completed = "La tarea '{task_title}' fue completada por {user}"
+deadline_approaching = "Se acerca la fecha límite para '{task_title}' - vence en {days:number} días"
+system_maintenance = "Mantenimiento del sistema programado para {date:date} a las {time}"
+
+# Mensajes de error
+[errors]
+network_error = "Falló la conexión de red"
+permission_denied = "Permiso denegado"
+file_not_found = "Archivo no encontrado"
+invalid_input = "Entrada inválida proporcionada"
+session_expired = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+quota_exceeded = "Has excedido tu cuota de {limit:number} elementos"
+validation_failed = "La validación falló: {field} es requerido" 

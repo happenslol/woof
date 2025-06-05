@@ -1,0 +1,112 @@
+# Globale Nachrichten
+title = "Willkommen zu unserer Anwendung"
+description = "Ein mächtiges Werkzeug zur Verwaltung Ihrer täglichen Aufgaben"
+loading = "Lädt..."
+error = "Etwas ist schiefgelaufen"
+
+# Navigationsbereich
+[nav]
+home = "Startseite"
+about = "Über uns"
+contact = "Kontakt"
+settings = "Einstellungen"
+profile = "Profil"
+
+# Benutzeroberfläche Nachrichten
+[ui]
+save = "Speichern"
+cancel = "Abbrechen"
+delete = "Löschen"
+edit = "Bearbeiten"
+confirm = "Bestätigen"
+back = "Zurück"
+next = "Weiter"
+previous = "Vorherige"
+
+# Benutzerprofil Bereich
+[profile]
+title = "Benutzerprofil"
+greeting = "Hallo, {name}!"
+last_login = "Letzte Anmeldung: {date}"
+account_created = "Konto erstellt am {date:date}"
+messages_count = "Sie haben {count:number} ungelesene Nachrichten"
+storage_usage = "{used:number} MB von {total:number} MB Speicher verwendet"
+
+# Profil Einstellungen Unterbereich
+[profile.settings]
+title = "Profil-Einstellungen"
+change_password = "Passwort ändern"
+notification_preferences = "Benachrichtigungseinstellungen"
+privacy_settings = "Datenschutzeinstellungen"
+account_deletion = "Konto löschen"
+
+# Profil erweiterte Einstellungen
+[profile.settings.advanced]
+title = "Erweiterte Einstellungen"
+data_export = "Ihre Daten exportieren"
+api_access = "API-Zugang"
+developer_mode = "Entwicklermodus"
+debug_info = "Debug-Informationen"
+
+# Dashboard Bereich
+[dashboard]
+title = "Dashboard"
+welcome_back = "Willkommen zurück, {username}!"
+stats_overview = "Statistikübersicht"
+recent_activity = "Letzte Aktivitäten"
+quick_actions = "Schnellaktionen"
+
+# Dashboard Widgets
+[dashboard.widgets]
+weather = "Wetter"
+calendar = "Kalender"
+tasks = "Aufgaben"
+notifications = "Benachrichtigungen"
+
+# Dashboard Analytik
+[dashboard.analytics]
+title = "Analytik"
+visitors_today = "Besucher heute: {count:number}"
+revenue_this_month = "Umsatz diesen Monat: {amount:number}€"
+conversion_rate = "Konversionsrate: {rate:number}%"
+performance_score = "Leistungsbewertung: {score:number}/100"
+
+# Aufgabenverwaltung
+[tasks]
+title = "Aufgabenverwaltung"
+create_task = "Neue Aufgabe erstellen"
+all_tasks = "Alle Aufgaben"
+completed_tasks = "Erledigte Aufgaben"
+pending_tasks = "Ausstehende Aufgaben"
+overdue_tasks = "Überfällige Aufgaben"
+
+# Aufgabendetails
+[tasks.details]
+title = "Aufgabendetails"
+due_date = "Fällig: {date:date}"
+assigned_to = "Zugewiesen an: {user}"
+priority = "Priorität: {level}"
+status = "Status: {status}"
+created_by = "Erstellt von {author} am {date:date}"
+estimated_time = "Geschätzte Zeit: {hours:number} Stunden"
+
+# Benachrichtigungen
+[notifications]
+title = "Benachrichtigungen"
+mark_all_read = "Alle als gelesen markieren"
+clear_all = "Alle löschen"
+no_notifications = "Keine neuen Benachrichtigungen"
+task_assigned = "{assignee} hat Ihnen eine Aufgabe zugewiesen: {task_title}"
+task_completed = "Aufgabe '{task_title}' wurde von {user} abgeschlossen"
+deadline_approaching = "Frist nähert sich für '{task_title}' - fällig in {days:number} Tagen"
+system_maintenance = "Systemwartung geplant für {date:date} um {time}"
+
+# Fehlermeldungen
+[errors]
+network_error = "Netzwerkverbindung fehlgeschlagen"
+permission_denied = "Zugriff verweigert"
+file_not_found = "Datei nicht gefunden"
+invalid_input = "Ungültige Eingabe"
+session_expired = "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
+quota_exceeded = "Sie haben Ihr Kontingent von {limit:number} Elementen überschritten"
+validation_failed = "Validierung fehlgeschlagen: {field} ist erforderlich" 
