@@ -1,6 +1,6 @@
 # Woof
 
-`woof` is a simple code generator for translations.
+`woof` is a simple translation code generator.
 
 ## How it works
 
