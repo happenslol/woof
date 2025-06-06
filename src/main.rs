@@ -1,6 +1,8 @@
 use clap::Parser;
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
+use std::io::Write;
+use std::iter::repeat_n;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use toml::{Table, Value};
@@ -233,6 +235,78 @@ fn parse_interpolations(s: &str) -> Result<Vec<ParsedInterpolation>> {
   Ok(result)
 }
 
+static DEFAULT_LOCALE: &str = "en";
+
+fn generate(dir: &Path, locales: &[String], module: &Module) -> Result<()> {
+  if dir.is_file() {
+    return Err(WoofError::OutputFileExists(dir.to_path_buf()));
+  }
+
+  if dir.exists() {
+    fs::remove_dir_all(dir)?;
+  }
+
+  fs::create_dir_all(dir)?;
+  let locales_union = locales
+    .iter()
+    .map(|s| format!("\"{s}\""))
+    .collect::<Vec<_>>()
+    .join(" | ");
+
+  fs::write(
+    dir.join("index.ts"),
+    format!(
+      r#"let _locale = "{DEFAULT_LOCALE}"
+export const setLocale = (locale: {locales_union}) => (_locale = locale)
+export const getLocale = () => _locale
+export * as m from "./root""#
+    ),
+  )?;
+
+  write_module(dir, 0, module, &locales_union)
+}
+
+fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Result<()> {
+  let filename = if depth == 0 { "root.ts" } else { "index.ts" };
+  let mut f = fs::File::create(dir.join(filename))?;
+
+  let root_import = if depth == 0 {
+    ".".to_string()
+  } else {
+    repeat_n("..", depth).collect::<Vec<&str>>().join("/")
+  };
+
+  writeln!(&mut f, "// eslint-disable")?;
+  writeln!(&mut f, "import {{ getLocale }} from \"{root_import}\"")?;
+
+  for (key, message) in module.messages.iter() {
+    writeln!(&mut f, "export const {key} = (locale?: {locales}) => {{")?;
+    writeln!(&mut f, "  const resolved = locale ?? getLocale()")?;
+
+    for (locale, string) in message.value.iter() {
+      writeln!(
+        &mut f,
+        "  if (resolved === \"{locale}\") return \"{string}\""
+      )?;
+    }
+
+    writeln!(&mut f, "  return `{key}`")?;
+    writeln!(&mut f, "}}")?;
+  }
+
+  for module_name in module.modules.keys() {
+    writeln!(&mut f, "export * as {module_name} from \"./{module_name}\"")?;
+  }
+
+  for (module_name, module) in module.modules.iter() {
+    let dir = dir.join(module_name);
+    fs::create_dir_all(&dir)?;
+    write_module(&dir, depth + 1, module, locales)?;
+  }
+
+  Ok(())
+}
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -247,20 +321,11 @@ struct Args {
 fn main() -> Result<()> {
   let config = Args::parse();
   let locales = collect_locales(config.input_dir)?;
+  let locale_names = locales.keys().cloned().collect::<Vec<_>>();
   let modules = build_modules(locales)?;
 
-  println!("{:#?}", modules);
-
   let out = Path::new(&config.out);
-  if out.is_file() {
-    return Err(WoofError::OutputFileExists(out.to_path_buf()));
-  }
-
-  // if out.exists() {
-  //   fs::remove_dir_all(out)?;
-  // }
-  //
-  // fs::create_dir_all(out)?;
+  generate(out, locale_names.as_slice(), &modules)?;
 
   Ok(())
 }
