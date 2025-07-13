@@ -1,10 +1,11 @@
-mod parse;
 mod generate;
+mod parse;
+mod sanitize;
 
 use clap::Parser;
 use std::path::Path;
 
-use parse::{build_modules, collect_locales, Result};
+use parse::{Result, build_modules, collect_locales};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

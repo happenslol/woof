@@ -57,12 +57,14 @@ fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Res
 
     writeln!(&mut f, "  const resolved = locale ?? getLocale()")?;
 
-    for (locale, string) in message.translation.iter() {
-      writeln!(
-        &mut f,
-        "  if (resolved === \"{locale}\") return \"{}\"",
-        string.escaped,
-      )?;
+    for locale in message.translation.keys() {
+      if let Some(template) = message.template_for_locale(locale) {
+        writeln!(
+          &mut f,
+          "  if (resolved === \"{locale}\") return `{}`",
+          template,
+        )?;
+      }
     }
 
     writeln!(&mut f, "  return `{}`", key.sanitized)?;
