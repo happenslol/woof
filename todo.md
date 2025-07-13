@@ -2,8 +2,8 @@
 
 ## Core
 
-- [ ] Implement interpolation codegen
-- [ ] Sanitize translation keys and module names (e.g. `delete`)
+- [x] Implement interpolation codegen
+- [x] Sanitize translation keys and module names (e.g. `delete`)
 - [ ] Implement namespaces
 - [ ] Allow configuring default locale
 
