@@ -48,7 +48,7 @@
       package = craneLib.buildPackage (args // {inherit cargoArtifacts;});
       cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     in {
-      devShells.default = craneLib.devShell {inputs-from = [package];};
+      devShells.default = craneLib.devShell {};
 
       checks = {
         inherit package;
