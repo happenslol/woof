@@ -28,7 +28,7 @@ previous = "Previous"
 title = "User Profile"
 greeting = "Hello, {name}!"
 last_login = "Last login: {date}"
-account_created = "Account created on {date:date}"
+account_created = "Account created on {date}"
 messages_count = "You have {count:number} unread messages"
 storage_usage = "Using {used:number} MB of {total:number} MB storage"
 
@@ -83,11 +83,11 @@ overdue_tasks = "Overdue Tasks"
 # Task details
 [tasks.details]
 title = "Task Details"
-due_date = "Due: {date:date}"
+due_date = "Due: {date}"
 assigned_to = "Assigned to: {user}"
 priority = "Priority: {level}"
 status = "Status: {status}"
-created_by = "Created by {author} on {date:date}"
+created_by = "Created by {author} on {date}"
 estimated_time = "Estimated time: {hours:number} hours"
 
 # Notifications
@@ -99,7 +99,7 @@ no_notifications = "No new notifications"
 task_assigned = "{assignee} assigned you a task: {task_title}"
 task_completed = "Task '{task_title}' was completed by {user}"
 deadline_approaching = "Deadline approaching for '{task_title}' - due in {days:number} days"
-system_maintenance = "System maintenance scheduled for {date:date} at {time}"
+system_maintenance = "System maintenance scheduled for {date} at {time}"
 
 # Error messages
 [errors]

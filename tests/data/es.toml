@@ -28,7 +28,7 @@ previous = "Anterior"
 title = "Perfil de Usuario"
 greeting = "¡Hola, {name}!"
 last_login = "Último acceso: {date}"
-account_created = "Cuenta creada el {date:date}"
+account_created = "Cuenta creada el {date}"
 messages_count = "Tienes {count:number} mensajes sin leer"
 storage_usage = "Usando {used:number} MB de {total:number} MB de almacenamiento"
 
@@ -83,11 +83,11 @@ overdue_tasks = "Tareas Vencidas"
 # Detalles de la tarea
 [tasks.details]
 title = "Detalles de la Tarea"
-due_date = "Vence: {date:date}"
+due_date = "Vence: {date}"
 assigned_to = "Asignado a: {user}"
 priority = "Prioridad: {level}"
 status = "Estado: {status}"
-created_by = "Creado por {author} el {date:date}"
+created_by = "Creado por {author} el {date}"
 estimated_time = "Tiempo estimado: {hours:number} horas"
 
 # Notificaciones
@@ -99,7 +99,7 @@ no_notifications = "No hay notificaciones nuevas"
 task_assigned = "{assignee} te asignó una tarea: {task_title}"
 task_completed = "La tarea '{task_title}' fue completada por {user}"
 deadline_approaching = "Se acerca la fecha límite para '{task_title}' - vence en {days:number} días"
-system_maintenance = "Mantenimiento del sistema programado para {date:date} a las {time}"
+system_maintenance = "Mantenimiento del sistema programado para {date} a las {time}"
 
 # Mensajes de error
 [errors]

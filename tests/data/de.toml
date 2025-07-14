@@ -28,7 +28,7 @@ previous = "Vorherige"
 title = "Benutzerprofil"
 greeting = "Hallo, {name}!"
 last_login = "Letzte Anmeldung: {date}"
-account_created = "Konto erstellt am {date:date}"
+account_created = "Konto erstellt am {date}"
 messages_count = "Sie haben {count:number} ungelesene Nachrichten"
 storage_usage = "{used:number} MB von {total:number} MB Speicher verwendet"
 
@@ -83,11 +83,11 @@ overdue_tasks = "Überfällige Aufgaben"
 # Aufgabendetails
 [tasks.details]
 title = "Aufgabendetails"
-due_date = "Fällig: {date:date}"
+due_date = "Fällig: {date}"
 assigned_to = "Zugewiesen an: {user}"
 priority = "Priorität: {level}"
 status = "Status: {status}"
-created_by = "Erstellt von {author} am {date:date}"
+created_by = "Erstellt von {author} am {date}"
 estimated_time = "Geschätzte Zeit: {hours:number} Stunden"
 
 # Benachrichtigungen
@@ -99,7 +99,7 @@ no_notifications = "Keine neuen Benachrichtigungen"
 task_assigned = "{assignee} hat Ihnen eine Aufgabe zugewiesen: {task_title}"
 task_completed = "Aufgabe '{task_title}' wurde von {user} abgeschlossen"
 deadline_approaching = "Frist nähert sich für '{task_title}' - fällig in {days:number} Tagen"
-system_maintenance = "Systemwartung geplant für {date:date} um {time}"
+system_maintenance = "Systemwartung geplant für {date} um {time}"
 
 # Fehlermeldungen
 [errors]
