@@ -15,7 +15,7 @@ pub fn sanitize_key(key: &str) -> String {
     .collect();
 
   // If the key starts with a number, prepend an underscore
-  if sanitized.chars().next().map_or(false, |c| c.is_numeric()) {
+  if sanitized.chars().next().is_some_and(|c| c.is_numeric()) {
     sanitized = format!("_{}", sanitized);
   }
 

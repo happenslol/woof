@@ -314,6 +314,77 @@ pub fn collect_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>>
   Ok(result)
 }
 
+pub fn build_modules(locales: HashMap<Locale, Value>) -> Result<Module> {
+  let mut messages = BTreeMap::new();
+  let mut modules = BTreeMap::new();
+
+  for (locale, value) in locales {
+    let Value::Table(root) = value else {
+      return Err(WoofError::RootNotTable);
+    };
+
+    build_module(&locale, root, &mut messages, &mut modules)?;
+  }
+
+  Ok(Module { messages, modules })
+}
+
+fn build_module(
+  locale: &Locale,
+  table: Table,
+  messages: &mut BTreeMap<Key, Message>,
+  modules: &mut BTreeMap<Key, Module>,
+) -> Result<()> {
+  for (key, value) in table {
+    let key = Key::new(&key);
+
+    match value {
+      Value::String(s) => {
+        let message = messages.entry(key.clone()).or_default();
+        let translation = Translation::new(&s);
+        let interpolations = translation.parse_interpolations()?;
+
+        message
+          .translation
+          .insert(locale.clone(), Translation::new(&s));
+
+        for interpolation in interpolations {
+          let entry = message
+            .interpolations
+            .entry(Key::new(&interpolation.name))
+            .or_default();
+
+          entry
+            .ranges
+            .insert(locale.clone(), (interpolation.start, interpolation.end));
+
+          if interpolation.type_ != entry.type_ {
+            return Err(WoofError::InterpolationTypeMismatch);
+          }
+        }
+      }
+
+      Value::Table(table) => {
+        let module = modules.entry(key.clone()).or_insert_with(|| Module {
+          messages: BTreeMap::new(),
+          modules: BTreeMap::new(),
+        });
+
+        build_module(locale, table, &mut module.messages, &mut module.modules)?;
+      }
+
+      _ => {
+        return Err(WoofError::UnsupportedValueType {
+          path: key.literal.clone(),
+          typename: value.type_str().to_string(),
+        });
+      }
+    }
+  }
+
+  Ok(())
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -437,75 +508,4 @@ mod tests {
     let result = message.template_for_locale(&locale);
     assert_eq!(result, Some("Use \\`\\${var}\\` or ${name}".to_string()));
   }
-}
-
-pub fn build_modules(locales: HashMap<Locale, Value>) -> Result<Module> {
-  let mut messages = BTreeMap::new();
-  let mut modules = BTreeMap::new();
-
-  for (locale, value) in locales {
-    let Value::Table(root) = value else {
-      return Err(WoofError::RootNotTable);
-    };
-
-    build_module(&locale, root, &mut messages, &mut modules)?;
-  }
-
-  Ok(Module { messages, modules })
-}
-
-fn build_module(
-  locale: &Locale,
-  table: Table,
-  messages: &mut BTreeMap<Key, Message>,
-  modules: &mut BTreeMap<Key, Module>,
-) -> Result<()> {
-  for (key, value) in table {
-    let key = Key::new(&key);
-
-    match value {
-      Value::String(s) => {
-        let message = messages.entry(key.clone()).or_default();
-        let translation = Translation::new(&s);
-        let interpolations = translation.parse_interpolations()?;
-
-        message
-          .translation
-          .insert(locale.clone(), Translation::new(&s));
-
-        for interpolation in interpolations {
-          let entry = message
-            .interpolations
-            .entry(Key::new(&interpolation.name))
-            .or_default();
-
-          entry
-            .ranges
-            .insert(locale.clone(), (interpolation.start, interpolation.end));
-
-          if interpolation.type_ != entry.type_ {
-            return Err(WoofError::InterpolationTypeMismatch);
-          }
-        }
-      }
-
-      Value::Table(table) => {
-        let module = modules.entry(key.clone()).or_insert_with(|| Module {
-          messages: BTreeMap::new(),
-          modules: BTreeMap::new(),
-        });
-
-        build_module(locale, table, &mut module.messages, &mut module.modules)?;
-      }
-
-      _ => {
-        return Err(WoofError::UnsupportedValueType {
-          path: key.literal.clone(),
-          typename: value.type_str().to_string(),
-        });
-      }
-    }
-  }
-
-  Ok(())
 }
