@@ -1,0 +1,20 @@
+title = "Dashboard"
+welcome_back = "Willkommen zurück, {username}!"
+stats_overview = "Statistiken Übersicht"
+recent_activity = "Letzte Aktivität"
+quick_actions = "Schnelle Aktionen"
+
+# Dashboard Widgets
+[widgets]
+weather = "Wetter"
+calendar = "Kalender"
+tasks = "Aufgaben"
+notifications = "Benachrichtigungen"
+
+# Dashboard Analytik
+[analytics]
+title = "Analytik"
+visitors_today = "Besucher heute: {count:number}"
+revenue_this_month = "Umsatz diesen Monat: ${amount:number}"
+conversion_rate = "Konversionsrate: {rate:number}%"
+performance_score = "Leistungsbewertung: {score:number}/100" 

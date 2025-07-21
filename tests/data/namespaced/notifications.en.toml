@@ -1,0 +1,8 @@
+title = "Notifications"
+mark_all_read = "Mark All as Read"
+clear_all = "Clear All"
+no_notifications = "No new notifications"
+task_assigned = "{assignee} assigned you a task: {task_title}"
+task_completed = "Task '{task_title}' was completed by {user}"
+deadline_approaching = "Deadline approaching for '{task_title}' - due in {days:number} days"
+system_maintenance = "System maintenance scheduled for {date} at {time}" 

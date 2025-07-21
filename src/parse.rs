@@ -1,6 +1,4 @@
 use std::collections::{BTreeMap, HashMap};
-use std::fs;
-use std::path::Path;
 use thiserror::Error;
 use toml::{Table, Value};
 
@@ -33,6 +31,12 @@ pub enum WoofError {
 
   #[error("Interpolation type mismatch between locales")]
   InterpolationTypeMismatch,
+
+  #[error("Mixed file naming modes detected: found both flat and namespaced files")]
+  MixedFileModes,
+
+  #[error("Invalid namespaced file name: {0} (expected format: namespace.locale.toml)")]
+  InvalidNamespacedFileName(String),
 
   #[error(transparent)]
   InterpolationError(#[from] ParseInterpolationError),
@@ -287,34 +291,26 @@ pub struct ParsedInterpolation {
   pub end: usize,
 }
 
-pub fn collect_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>> {
-  let dir = dir.as_ref();
-  let mut result = HashMap::new();
-  if !dir.is_dir() {
-    return Err(WoofError::InvalidInputDirectory(dir.display().to_string()));
+/// Builds a module from namespaced files by creating a parent module with namespace modules as
+/// children
+pub fn build_namespaced_module(
+  namespaced_groups: HashMap<String, HashMap<Locale, Value>>,
+) -> Result<Module> {
+  let mut modules = std::collections::BTreeMap::new();
+
+  for (namespace, locales) in namespaced_groups {
+    let module = build_flat_module(locales)?;
+    let key = crate::parse::Key::new(&namespace);
+    modules.insert(key, module);
   }
 
-  let entries = fs::read_dir(dir)?;
-  let toml_files = entries
-    .filter_map(|e| e.ok())
-    .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("toml"));
-
-  for entry in toml_files {
-    let path = entry.path();
-    let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
-      continue;
-    };
-
-    let stem = stem.to_string();
-    let contents = fs::read_to_string(path)?;
-    let locale = Locale(stem.to_string());
-    result.insert(locale, toml::from_str(&contents)?);
-  }
-
-  Ok(result)
+  Ok(Module {
+    messages: std::collections::BTreeMap::new(),
+    modules,
+  })
 }
 
-pub fn build_modules(locales: HashMap<Locale, Value>) -> Result<Module> {
+pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module> {
   let mut messages = BTreeMap::new();
   let mut modules = BTreeMap::new();
 
@@ -352,7 +348,10 @@ fn build_module(
           let entry = message
             .interpolations
             .entry(Key::new(&interpolation.name))
-            .or_default();
+            .or_insert_with(|| Interpolation {
+              type_: interpolation.type_,
+              ranges: HashMap::with_capacity(1),
+            });
 
           entry
             .ranges

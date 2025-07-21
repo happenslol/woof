@@ -1,0 +1,8 @@
+title = "Benachrichtigungen"
+mark_all_read = "Alle als gelesen markieren"
+clear_all = "Alle löschen"
+no_notifications = "Keine neuen Benachrichtigungen"
+task_assigned = "{assignee} hat Ihnen eine Aufgabe zugewiesen: {task_title}"
+task_completed = "Aufgabe '{task_title}' wurde von {user} abgeschlossen"
+deadline_approaching = "Deadline nähert sich für '{task_title}' - fällig in {days:number} Tagen"
+system_maintenance = "Systemwartung geplant für {date} um {time}" 

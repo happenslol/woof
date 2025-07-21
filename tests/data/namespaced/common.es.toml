@@ -1,0 +1,34 @@
+# Mensajes globales
+title = "Bienvenido a nuestra aplicación"
+description = "Una herramienta poderosa para gestionar tus tareas diarias"
+loading = "Cargando..."
+error = "Algo salió mal"
+
+# Sección de navegación
+[nav]
+home = "Inicio"
+about = "Acerca de"
+contact = "Contacto"
+settings = "Configuración"
+profile = "Perfil"
+
+# Mensajes de interfaz de usuario
+[ui]
+save = "Guardar"
+cancel = "Cancelar"
+delete = "Eliminar"
+edit = "Editar"
+confirm = "Confirmar"
+back = "Atrás"
+next = "Siguiente"
+previous = "Anterior"
+
+# Mensajes de error
+[errors]
+network_error = "Falló la conexión de red"
+permission_denied = "Permiso denegado"
+file_not_found = "Archivo no encontrado"
+invalid_input = "Entrada inválida proporcionada"
+session_expired = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+quota_exceeded = "Has excedido tu cuota de {limit:number} elementos"
+validation_failed = "Validación falló: {field} es requerido" 

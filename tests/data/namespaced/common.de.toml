@@ -1,0 +1,34 @@
+# Globale Nachrichten
+title = "Willkommen zu unserer Anwendung"
+description = "Ein mächtiges Werkzeug zur Verwaltung Ihrer täglichen Aufgaben"
+loading = "Lädt..."
+error = "Etwas ist schiefgelaufen"
+
+# Navigationsbereich
+[nav]
+home = "Startseite"
+about = "Über uns"
+contact = "Kontakt"
+settings = "Einstellungen"
+profile = "Profil"
+
+# Benutzeroberfläche Nachrichten
+[ui]
+save = "Speichern"
+cancel = "Abbrechen"
+delete = "Löschen"
+edit = "Bearbeiten"
+confirm = "Bestätigen"
+back = "Zurück"
+next = "Weiter"
+previous = "Vorherige"
+
+# Fehlermeldungen
+[errors]
+network_error = "Netzwerkverbindung fehlgeschlagen"
+permission_denied = "Berechtigung verweigert"
+file_not_found = "Datei nicht gefunden"
+invalid_input = "Ungültige Eingabe"
+session_expired = "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
+quota_exceeded = "Sie haben Ihr Kontingent von {limit:number} Elementen überschritten"
+validation_failed = "Validierung fehlgeschlagen: {field} ist erforderlich" 
