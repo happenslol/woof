@@ -413,7 +413,7 @@ mod tests {
     let result = message.template_for_locale(&locale);
     assert_eq!(
       result,
-      Some("Hello ${name}, you have ${count} messages".to_string())
+      Some("Hello ${args.name}, you have ${args.count} messages".to_string())
     );
   }
 
@@ -444,7 +444,7 @@ mod tests {
     let result = message.template_for_locale(&locale);
     assert_eq!(
       result,
-      Some("Class: ${class_}, function: ${function_}".to_string())
+      Some("Class: ${args.class_}, function: ${args.function_}".to_string())
     );
   }
 
@@ -476,7 +476,10 @@ mod tests {
     message.interpolations.insert(Key::new("c"), c_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(result, Some("${a} ${b} ${c} ${d}".to_string()));
+    assert_eq!(
+      result,
+      Some("${args.a} ${args.b} ${args.c} ${args.d}".to_string())
+    );
   }
 
   #[test]
@@ -505,6 +508,9 @@ mod tests {
     message.interpolations.insert(Key::new("name"), name_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(result, Some("Use \\`\\${var}\\` or ${name}".to_string()));
+    assert_eq!(
+      result,
+      Some("Use \\`\\${var}\\` or ${args.name}".to_string())
+    );
   }
 }
