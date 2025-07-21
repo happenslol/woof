@@ -6,6 +6,29 @@ use crate::sanitize::{escape_translation, sanitize_key};
 
 pub type Result<T> = std::result::Result<T, WoofError>;
 
+/// Validates that an interpolation identifier follows the rules:
+/// - Must start with a letter (a-z, A-Z)
+/// - Can only contain alphanumeric characters and underscores
+fn validate_interpolation_name(name: &str) -> Result<()> {
+  if name.is_empty() {
+    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+  }
+
+  let mut chars = name.chars();
+
+  // First character must be a letter
+  if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
+    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+  }
+
+  // Remaining characters must be alphanumeric or underscore
+  if !chars.all(|c| c.is_ascii_alphanumeric() || c == '_') {
+    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+  }
+
+  Ok(())
+}
+
 #[derive(Error, Debug)]
 pub enum WoofError {
   #[error("IO error: {0}")]
@@ -28,6 +51,11 @@ pub enum WoofError {
 
   #[error("Invalid interpolation format in string: {0}")]
   InvalidInterpolation(String),
+
+  #[error(
+    "Invalid interpolation identifier '{0}': must start with a letter and contain only alphanumeric characters and underscores"
+  )]
+  InvalidInterpolationIdentifier(String),
 
   #[error("Interpolation type mismatch between locales")]
   InterpolationTypeMismatch,
@@ -156,17 +184,16 @@ impl Translation {
   pub fn parse_interpolations(&self) -> Result<Vec<ParsedInterpolation>> {
     let s = &self.0;
     let mut result = Vec::new();
-    let chars = s.chars().enumerate();
 
     let mut parsing_interpolation = false;
-    let mut start = 0;
+    let mut start_byte_index = 0;
     let mut parsing_type = false;
     let mut current_name = String::new();
     let mut current_type = String::new();
 
-    for (index, c) in chars {
+    for (byte_index, c) in s.char_indices() {
       if c == '{' {
-        start = index;
+        start_byte_index = byte_index;
         parsing_interpolation = true;
         continue;
       }
@@ -182,31 +209,26 @@ impl Translation {
       }
 
       if c == ':' {
-        if current_name.is_empty() {
-          return Err(WoofError::InvalidInterpolation(s.to_string()));
-        }
-
+        validate_interpolation_name(&current_name)?;
         parsing_type = true;
         continue;
       }
 
       if c == '}' {
-        if current_name.is_empty() {
-          return Err(WoofError::InvalidInterpolation(s.to_string()));
-        }
-
         let typename = if !current_type.is_empty() {
           let typename = current_type.clone();
           current_type.clear();
           InterpolationType::try_from(typename.as_str())?
         } else {
+          // Only validate if we haven't already done so (when no type was specified)
+          validate_interpolation_name(&current_name)?;
           InterpolationType::None
         };
 
         result.push(ParsedInterpolation {
           name: current_name.clone(),
-          start,
-          end: index,
+          start: start_byte_index,
+          end: byte_index,
           type_: typename,
         });
 
@@ -294,11 +316,11 @@ pub struct ParsedInterpolation {
 /// Builds a module from namespaced files by creating a parent module with namespace modules as
 /// children
 pub fn build_namespaced_module(
-  namespaced_groups: HashMap<String, HashMap<Locale, Value>>,
+  namespaces: HashMap<String, HashMap<Locale, Value>>,
 ) -> Result<Module> {
   let mut modules = std::collections::BTreeMap::new();
 
-  for (namespace, locales) in namespaced_groups {
+  for (namespace, locales) in namespaces {
     let module = build_flat_module(locales)?;
     let key = crate::parse::Key::new(&namespace);
     modules.insert(key, module);
@@ -418,6 +440,89 @@ mod tests {
   }
 
   #[test]
+  fn multibyte_characters_with_interpolation() {
+    // Test that interpolation replacement works correctly with multi-byte characters
+    // Multi-byte characters (like 🌍) have different byte lengths vs character counts,
+    // so this ensures we use byte indices for string replacement, not character indices
+    let input = "Hello 🌍 world! Welcome {name}!";
+    let translation = Translation::new(input);
+
+    // Parse interpolations - should correctly track byte indices
+    let interpolations = translation.parse_interpolations().unwrap();
+
+    // Should find one interpolation
+    assert_eq!(interpolations.len(), 1);
+    let interp = &interpolations[0];
+    assert_eq!(interp.name, "name");
+
+    // Set up message for template generation
+    let mut message = Message::default();
+    let locale = Locale("en".to_string());
+
+    message.translation.insert(locale.clone(), translation);
+
+    // Add interpolation info with the parsed byte ranges
+    let mut name_interp = Interpolation::default();
+    name_interp
+      .ranges
+      .insert(locale.clone(), (interp.start, interp.end));
+    message.interpolations.insert(Key::new("name"), name_interp);
+
+    // Generate template - should correctly replace {name} with ${args.name}
+    let result = message.template_for_locale(&locale);
+
+    // Verify the result is correct
+    assert_eq!(
+      result,
+      Some("Hello 🌍 world! Welcome ${args.name}!".to_string()),
+      "Interpolation replacement failed with multi-byte characters"
+    );
+  }
+
+  #[test]
+  fn various_multibyte_characters_with_interpolations() {
+    // Test with various multi-byte characters: emoji, accented chars, CJK characters
+    let test_cases = vec![
+      ("Café {name}", "Café ${args.name}"),
+      ("中文 {count:number} 测试", "中文 ${args.count} 测试"),
+      ("🚀🌟✨ {msg} 🎉", "🚀🌟✨ ${args.msg} 🎉"),
+      ("Ñiño {age:number} años", "Ñiño ${args.age} años"),
+      ("👨‍👩‍👧‍👦 family {size:number}", "👨‍👩‍👧‍👦 family ${args.size}"),
+    ];
+
+    for (input, expected) in test_cases {
+      let translation = Translation::new(input);
+      let interpolations = translation.parse_interpolations().unwrap();
+
+      let mut message = Message::default();
+      let locale = Locale("en".to_string());
+      message.translation.insert(locale.clone(), translation);
+
+      // Add all found interpolations
+      for interp in interpolations {
+        let mut interpolation_obj = Interpolation::default();
+        interpolation_obj.type_ = interp.type_;
+        interpolation_obj
+          .ranges
+          .insert(locale.clone(), (interp.start, interp.end));
+        message
+          .interpolations
+          .insert(Key::new(&interp.name), interpolation_obj);
+      }
+
+      let result = message.template_for_locale(&locale);
+      assert_eq!(
+        result,
+        Some(expected.to_string()),
+        "Failed for input: '{}', expected: '{}', got: '{:?}'",
+        input,
+        expected,
+        result
+      );
+    }
+  }
+
+  #[test]
   fn template_for_locale_sanitized_keys() {
     let mut message = Message::default();
     let locale = Locale("en".to_string());
@@ -512,5 +617,88 @@ mod tests {
       result,
       Some("Use \\`\\${var}\\` or ${args.name}".to_string())
     );
+  }
+
+  #[test]
+  fn valid_interpolation_identifiers() {
+    let valid_cases = vec![
+      "Hello {name}",
+      "Count: {count:number}",
+      "User {userId}",
+      "Value {value_123}",
+      "Test {a}",
+      "Multiple {firstName} {lastName}",
+      "Underscore {user_name}",
+      "Mixed {value1} and {item_2}",
+    ];
+
+    for input in valid_cases {
+      let translation = Translation::new(input);
+      let result = translation.parse_interpolations();
+      assert!(
+        result.is_ok(),
+        "Expected valid interpolation for input: '{}', but got error: {:?}",
+        input,
+        result.err()
+      );
+    }
+  }
+
+  #[test]
+  fn invalid_interpolation_identifiers() {
+    let invalid_cases = vec![
+      ("Number start {123name}", "123name"),
+      ("Hyphen {user-name}", "user-name"),
+      ("Space {user name}", "user name"),
+      ("Dot {user.name}", "user.name"),
+      ("Special chars {user@email}", "user@email"),
+      ("Underscore start {_name}", "_name"),
+      ("Number only {123}", "123"),
+      ("Special start {$var}", "$var"),
+      ("Unicode {名前}", "名前"),
+    ];
+
+    for (input, expected_invalid_name) in invalid_cases {
+      let translation = Translation::new(input);
+      let result = translation.parse_interpolations();
+
+      match result {
+        Err(WoofError::InvalidInterpolationIdentifier(name)) => {
+          if !expected_invalid_name.is_empty() {
+            assert_eq!(
+              name, expected_invalid_name,
+              "Expected invalid identifier '{}' for input '{}', but got '{}'",
+              expected_invalid_name, input, name
+            );
+          }
+        }
+        Err(other_error) => {
+          panic!(
+            "Expected InvalidInterpolationIdentifier for input '{}', but got different error: {:?}",
+            input, other_error
+          );
+        }
+        Ok(_) => {
+          panic!(
+            "Expected invalid interpolation identifier for input: '{}', but parsing succeeded",
+            input
+          );
+        }
+      }
+    }
+  }
+
+  #[test]
+  fn identifier_validation_with_types() {
+    // Test that validation works correctly when types are specified
+    let translation = Translation::new("Invalid {123name:string}");
+    let result = translation.parse_interpolations();
+
+    match result {
+      Err(WoofError::InvalidInterpolationIdentifier(name)) => {
+        assert_eq!(name, "123name");
+      }
+      _ => panic!("Expected InvalidInterpolationIdentifier error"),
+    }
   }
 }
