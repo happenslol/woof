@@ -71,14 +71,24 @@ impl TryFrom<&str> for InterpolationType {
 impl std::fmt::Display for InterpolationType {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::None => write!(f, ""),
+      Self::None => write!(f, "none"),
       Self::String => write!(f, "string"),
       Self::Number => write!(f, "number"),
     }
   }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl InterpolationType {
+  pub fn as_typescript_type(&self) -> &'static str {
+    match self {
+      Self::None => "string",
+      Self::String => "string",
+      Self::Number => "number",
+    }
+  }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Locale(pub String);
 
 impl std::hash::Hash for Locale {
@@ -89,7 +99,7 @@ impl std::hash::Hash for Locale {
 
 impl std::fmt::Display for Locale {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "\"{}\"", self.0)
+    write!(f, "{}", self.0)
   }
 }
 
@@ -222,12 +232,6 @@ impl Translation {
   }
 }
 
-impl std::fmt::Display for Translation {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "\"{}\"", self.0)
-  }
-}
-
 #[derive(Debug, Default)]
 pub struct Interpolation {
   pub type_: InterpolationType,
@@ -236,8 +240,8 @@ pub struct Interpolation {
 
 #[derive(Debug, Default)]
 pub struct Message {
-  pub translation: HashMap<Locale, Translation>,
-  pub interpolations: HashMap<Key, Interpolation>,
+  pub translation: BTreeMap<Locale, Translation>,
+  pub interpolations: BTreeMap<Key, Interpolation>,
 }
 
 impl Message {
@@ -266,11 +270,7 @@ impl Message {
     interpolations.reverse();
 
     for (key, (start, end)) in interpolations {
-      // Calculate the content to replace (inclusive of both { and })
-      let template_var = format!("${{{}}}", key.sanitized);
-
-      // Replace the range with the template variable
-      // The range is inclusive of start and end positions
+      let template_var = format!("${{args.{}}}", key.sanitized);
       result.replace_range(start..=end, &template_var);
     }
 

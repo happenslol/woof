@@ -4,7 +4,7 @@
 
 - [x] Implement interpolation codegen
 - [x] Sanitize translation keys and module names (e.g. `delete`)
-- [ ] Implement namespaces
+- [x] Implement namespaces
 - [ ] Allow configuring default locale
 
 ## Reporting
@@ -12,7 +12,7 @@
 - [ ] Collect errors instead of aborting parsing
 - [ ] Detect translation key/module name collisions
 - [ ] Detect missing translations
-- [ ] Report spanned errors using [ariadne](https://docs.rs/ariadne/latest/ariadne/)
+- [ ] Report spanned errors using ariadne/miette
 
 ## Benchmarks
 

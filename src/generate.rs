@@ -1,6 +1,6 @@
 use crate::parse::{Locale, Module, Result, WoofError};
 use std::fs;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 use std::iter::repeat_n;
 use std::path::Path;
 
@@ -16,16 +16,18 @@ pub fn generate(dir: &Path, locales: &[Locale], module: &Module) -> Result<()> {
   }
 
   fs::create_dir_all(dir)?;
-  let locales_union = locales
+  let mut locales_union = locales
     .iter()
     .map(|s| format!("\"{s}\""))
-    .collect::<Vec<_>>()
-    .join(" | ");
+    .collect::<Vec<_>>();
+
+  locales_union.sort();
+  let locales_union = locales_union.join(" | ");
 
   fs::write(
     dir.join("index.ts"),
     format!(
-      r#"let _locale = "{DEFAULT_LOCALE}"
+      r#"let _locale: {locales_union} = "{DEFAULT_LOCALE}"
 export const setLocale = (locale: {locales_union}) => (_locale = locale)
 export const getLocale = () => _locale
 export * as m from "./root""#
@@ -36,8 +38,13 @@ export * as m from "./root""#
 }
 
 fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Result<()> {
+  if module.messages.is_empty() && module.modules.is_empty() {
+    return Ok(());
+  }
+
   let filename = if depth == 0 { "root.ts" } else { "index.ts" };
-  let mut f = fs::File::create(dir.join(filename))?;
+  let f = fs::File::create(dir.join(filename))?;
+  let mut f = BufWriter::new(f);
 
   let root_import = if depth == 0 {
     ".".to_string()
@@ -46,15 +53,30 @@ fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Res
   };
 
   writeln!(&mut f, "// eslint-disable")?;
-  writeln!(&mut f, "import {{ getLocale }} from \"{root_import}\"")?;
+
+  if !module.messages.is_empty() {
+    writeln!(&mut f, "import {{ getLocale }} from \"{root_import}\"")?;
+  }
 
   for (key, message) in module.messages.iter() {
-    writeln!(
-      &mut f,
-      "export const {key} = (locale?: {locales}) => {{",
-      key = key.sanitized
-    )?;
+    write!(&mut f, "export const {key} = (", key = key.sanitized)?;
 
+    if !message.interpolations.is_empty() {
+      write!(&mut f, "args: {{ ")?;
+
+      for (key, interpolation) in message.interpolations.iter() {
+        write!(
+          &mut f,
+          "{name}: {type_}; ",
+          name = key.sanitized,
+          type_ = interpolation.type_.as_typescript_type()
+        )?;
+      }
+
+      write!(&mut f, "}},")?;
+    }
+
+    writeln!(&mut f, "locale?: {locales}) => {{")?;
     writeln!(&mut f, "  const resolved = locale ?? getLocale()")?;
 
     for locale in message.translation.keys() {
