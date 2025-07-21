@@ -1,0 +1,12 @@
+---
+source: src/parse.rs
+expression: "[test_interpolation(\"Hello 🌍 world! Welcome {name}!\"),\ntest_interpolation(\"Café {name}\"),\ntest_interpolation(\"中文 {count:number} 测试\"),\ntest_interpolation(\"🚀🌟✨ {msg} 🎉\"),\ntest_interpolation(\"Ñiño {age:number} años\"),\ntest_interpolation(\"👨‍👩‍👧‍👦 family {size:number}\"),]"
+---
+[
+    "Hello 🌍 world! Welcome ${args.name}!",
+    "Café ${args.name}",
+    "中文 ${args.count} 测试",
+    "🚀🌟✨ ${args.msg} 🎉",
+    "Ñiño ${args.age} años",
+    "👨\u{200d}👩\u{200d}👧\u{200d}👦 family ${args.size}",
+]

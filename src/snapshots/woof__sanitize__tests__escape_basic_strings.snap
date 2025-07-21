@@ -1,0 +1,8 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"hello world\"), escape_translation(\"simple string\"),]"
+---
+[
+    "hello world",
+    "simple string",
+]

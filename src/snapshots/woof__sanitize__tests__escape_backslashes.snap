@@ -1,0 +1,10 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"path\\\\to\\\\file\"),\nescape_translation(\"escape \\\\n newline\"), escape_translation(\"\\\\\"),\nescape_translation(\"\\\\\\\\\\\\\\\\\"),]"
+---
+[
+    "path\\\\to\\\\file",
+    "escape \\\\n newline",
+    "\\\\",
+    "\\\\\\\\\\\\\\\\",
+]

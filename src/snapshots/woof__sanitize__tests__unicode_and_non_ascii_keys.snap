@@ -1,0 +1,12 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"café\"), sanitize_key(\"naïve\"), sanitize_key(\"测试\"),\nsanitize_key(\"🚀rocket\"), sanitize_key(\"mix_中文_test\"),\nsanitize_key(\"émoji🎉test\"),]"
+---
+[
+    "café",
+    "naïve",
+    "测试",
+    "rocket",
+    "mix_中文_test",
+    "émojitest",
+]

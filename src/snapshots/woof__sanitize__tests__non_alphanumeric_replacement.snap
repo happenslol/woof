@@ -1,0 +1,16 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"hello-world\"), sanitize_key(\"hello.world\"),\nsanitize_key(\"hello world\"), sanitize_key(\"hello@world!\"),\nsanitize_key(\"test-key-123\"), sanitize_key(\"hello---world\"),\nsanitize_key(\"test...key\"), sanitize_key(\"multiple___underscores\"),\nsanitize_key(\"@@##$$%%\"), sanitize_key(\"mix-.-_-.-test\"),]"
+---
+[
+    "helloworld",
+    "helloworld",
+    "helloworld",
+    "helloworld",
+    "testkey123",
+    "helloworld",
+    "testkey",
+    "multiple___underscores",
+    "",
+    "mix_test",
+]

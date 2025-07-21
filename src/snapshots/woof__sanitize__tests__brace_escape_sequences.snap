@@ -1,0 +1,13 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"Literal braces {{hello}}\"),\nescape_translation(\"Mixed {name} and {{literal}}\"),\nescape_translation(\"Only escapes {{}} here\"),\nescape_translation(\"With template literal ${{var}}\"),\nescape_translation(\"Complex {{start}} ${middle} {{end}}\"),\nescape_translation(\"Brace escapes with backticks `{{test}}`\"),\nescape_translation(\"Single } characters are fine\"),]"
+---
+[
+    "Literal braces {{hello}}",
+    "Mixed {name} and {{literal}}",
+    "Only escapes {{}} here",
+    "With template literal \\${{var}}",
+    "Complex {{start}} \\${middle} {{end}}",
+    "Brace escapes with backticks \\`{{test}}\\`",
+    "Single } characters are fine",
+]

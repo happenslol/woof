@@ -1,0 +1,9 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"123hello\"), sanitize_key(\"1test\"), sanitize_key(\"999\"),]"
+---
+[
+    "_123hello",
+    "_1test",
+    "_999",
+]

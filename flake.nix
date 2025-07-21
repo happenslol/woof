@@ -48,7 +48,9 @@
       package = craneLib.buildPackage (args // {inherit cargoArtifacts;});
       cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     in {
-      devShells.default = craneLib.devShell {};
+      devShells.default = craneLib.devShell {
+        packages = with pkgs; [cargo-insta rust-analyzer-nightly];
+      };
 
       checks = {
         inherit package;

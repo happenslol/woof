@@ -1,0 +1,10 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"123-class\"), sanitize_key(\"my-function-name\"),\nsanitize_key(\"async-operation\"), sanitize_key(\"get-data\"),]"
+---
+[
+    "_123class",
+    "myfunctionname",
+    "asyncoperation",
+    "getdata",
+]

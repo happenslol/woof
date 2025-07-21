@@ -1,0 +1,18 @@
+---
+source: src/parse.rs
+expression: "[generate(\"Welcome {{user}} and {name}\"),\ngenerate(\"Price: ${{amount}} for {item}\"),\ngenerate(\"Braces: {{}} and {count:number}\"),\ngenerate(\"Start {{literal}} middle {var} end {{more}}\"),]"
+---
+[
+    Some(
+        "Welcome {{user}} and ${args.name}",
+    ),
+    Some(
+        "Price: \\${{amount}} for ${args.item}",
+    ),
+    Some(
+        "Braces: {{}} and ${args.count}",
+    ),
+    Some(
+        "Start {{literal}} middle ${args.var_} end {{more}}",
+    ),
+]

@@ -1,0 +1,13 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"Use `${var}` or {name}\"),\nescape_translation(\"Path: C:\\\\Users\\\\{username}\"),\nescape_translation(\"`Hello ${world}` says {name:string}\"),\nescape_translation(\"\\\\`${}\\\\`\"), escape_translation(\"`\\\\${test}\\\\`\"),\nescape_translation(\"Before{var}\\\\after`\"),\nescape_translation(\"`${start}{middle:type}${end}`\"),]"
+---
+[
+    "Use \\`\\${var}\\` or {name}",
+    "Path: C:\\\\Users\\\\{username}",
+    "\\`Hello \\${world}\\` says {name:string}",
+    "\\\\\\`\\${}\\\\\\`",
+    "\\`\\\\\\${test}\\\\\\`",
+    "Before{var}\\\\after\\`",
+    "\\`\\${start}{middle:type}\\${end}\\`",
+]

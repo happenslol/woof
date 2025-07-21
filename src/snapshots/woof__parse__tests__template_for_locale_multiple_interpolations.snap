@@ -1,0 +1,5 @@
+---
+source: src/parse.rs
+expression: result.unwrap()
+---
+${args.a} ${args.b} ${args.c} ${args.d}

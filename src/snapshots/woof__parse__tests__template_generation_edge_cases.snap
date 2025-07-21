@@ -1,0 +1,27 @@
+---
+source: src/parse.rs
+expression: "[generate(\"\"), generate(\"No interpolations here\"), generate(\"{single}\"),\ngenerate(\"Only text no braces\"), generate(\"Start {a} middle {b} end\"),\ngenerate(\"{a}{b}{c}\"), generate(\"Unicode 🌍 {name} more unicode 🎉\"),]"
+---
+[
+    Some(
+        "",
+    ),
+    Some(
+        "No interpolations here",
+    ),
+    Some(
+        "${args.single}",
+    ),
+    Some(
+        "Only text no braces",
+    ),
+    Some(
+        "Start ${args.a} middle ${args.b} end",
+    ),
+    Some(
+        "${args.a}${args.b}${args.c}",
+    ),
+    Some(
+        "Unicode 🌍 ${args.name} more unicode 🎉",
+    ),
+]

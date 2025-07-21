@@ -1,0 +1,10 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"hello `world`\"),\nescape_translation(\"`backtick at start\"),\nescape_translation(\"backtick at end`\"),\nescape_translation(\"```backticks```\"),]"
+---
+[
+    "hello \\`world\\`",
+    "\\`backtick at start",
+    "backtick at end\\`",
+    "\\`\\`\\`backticks\\`\\`\\`",
+]

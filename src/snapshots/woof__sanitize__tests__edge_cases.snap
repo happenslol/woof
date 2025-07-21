@@ -1,0 +1,7 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"___\"),]"
+---
+[
+    "___",
+]

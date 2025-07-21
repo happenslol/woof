@@ -1,0 +1,17 @@
+---
+source: src/sanitize.rs
+expression: "[sanitize_key(\"class\"), sanitize_key(\"function\"), sanitize_key(\"return\"),\nsanitize_key(\"const\"), sanitize_key(\"let\"), sanitize_key(\"async\"),\nsanitize_key(\"await\"), sanitize_key(\"Promise\"), sanitize_key(\"Class\"),\nsanitize_key(\"FUNCTION\"), sanitize_key(\"ASYNC\"),]"
+---
+[
+    "class_",
+    "function_",
+    "return_",
+    "const_",
+    "let_",
+    "async_",
+    "await_",
+    "Promise_",
+    "Class",
+    "FUNCTION",
+    "ASYNC",
+]

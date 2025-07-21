@@ -1,0 +1,5 @@
+---
+source: src/parse.rs
+expression: result.unwrap()
+---
+Hello ${args.name}, you have ${args.count} messages

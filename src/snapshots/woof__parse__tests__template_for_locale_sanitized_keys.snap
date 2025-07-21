@@ -1,0 +1,5 @@
+---
+source: src/parse.rs
+expression: result.unwrap()
+---
+Class: ${args.class_}, function: ${args.function_}

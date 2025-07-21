@@ -199,125 +199,162 @@ mod tests {
 
   #[test]
   fn alphanumeric_keys() {
-    assert_eq!(sanitize_key("hello"), "hello");
-    assert_eq!(sanitize_key("hello123"), "hello123");
-    assert_eq!(sanitize_key("HELLO_WORLD"), "HELLO_WORLD");
-    assert_eq!(sanitize_key("test_123_ABC"), "test_123_ABC");
+    insta::assert_debug_snapshot!([
+      sanitize_key("hello"),
+      sanitize_key("hello123"),
+      sanitize_key("HELLO_WORLD"),
+      sanitize_key("test_123_ABC"),
+    ]);
   }
 
   #[test]
   fn non_alphanumeric_replacement() {
-    assert_eq!(sanitize_key("hello-world"), "helloworld");
-    assert_eq!(sanitize_key("hello.world"), "helloworld");
-    assert_eq!(sanitize_key("hello world"), "helloworld");
-    assert_eq!(sanitize_key("hello@world!"), "helloworld");
-    assert_eq!(sanitize_key("test-key-123"), "testkey123");
+    insta::assert_debug_snapshot!([
+      sanitize_key("hello-world"),
+      sanitize_key("hello.world"),
+      sanitize_key("hello world"),
+      sanitize_key("hello@world!"),
+      sanitize_key("test-key-123"),
+      sanitize_key("hello---world"),
+      sanitize_key("test...key"),
+      sanitize_key("multiple___underscores"),
+      sanitize_key("@@##$$%%"),
+      sanitize_key("mix-.-_-.-test"),
+    ]);
   }
 
   #[test]
   fn reserved_keywords() {
-    assert_eq!(sanitize_key("class"), "class_");
-    assert_eq!(sanitize_key("function"), "function_");
-    assert_eq!(sanitize_key("return"), "return_");
-    assert_eq!(sanitize_key("const"), "const_");
-    assert_eq!(sanitize_key("let"), "let_");
-    assert_eq!(sanitize_key("async"), "async_");
-    assert_eq!(sanitize_key("await"), "await_");
-    assert_eq!(sanitize_key("Promise"), "Promise_");
+    insta::assert_debug_snapshot!([
+      sanitize_key("class"),
+      sanitize_key("function"),
+      sanitize_key("return"),
+      sanitize_key("const"),
+      sanitize_key("let"),
+      sanitize_key("async"),
+      sanitize_key("await"),
+      sanitize_key("Promise"),
+      sanitize_key("Class"),
+      sanitize_key("FUNCTION"),
+      sanitize_key("ASYNC"),
+    ]);
   }
 
   #[test]
   fn numeric_start() {
-    assert_eq!(sanitize_key("123hello"), "_123hello");
-    assert_eq!(sanitize_key("1test"), "_1test");
-    assert_eq!(sanitize_key("999"), "_999");
+    insta::assert_debug_snapshot!([
+      sanitize_key("123hello"),
+      sanitize_key("1test"),
+      sanitize_key("999"),
+    ]);
   }
 
   #[test]
   fn edge_cases() {
     assert_eq!(sanitize_key(""), "");
-    assert_eq!(sanitize_key("___"), "___");
     assert_eq!(sanitize_key("@@@"), "");
     assert_eq!(sanitize_key("   "), "");
+
+    insta::assert_debug_snapshot!([sanitize_key("___"),]);
   }
 
   #[test]
   fn combined_rules() {
-    assert_eq!(sanitize_key("123-class"), "_123class");
-    assert_eq!(sanitize_key("my-function-name"), "myfunctionname");
-    assert_eq!(sanitize_key("async-operation"), "asyncoperation");
-    assert_eq!(sanitize_key("get-data"), "getdata");
+    insta::assert_debug_snapshot!([
+      sanitize_key("123-class"),
+      sanitize_key("my-function-name"),
+      sanitize_key("async-operation"),
+      sanitize_key("get-data"),
+    ]);
   }
 
   #[test]
   fn escape_basic_strings() {
-    assert_eq!(escape_translation("hello world"), "hello world");
-    assert_eq!(escape_translation("simple string"), "simple string");
+    insta::assert_debug_snapshot!([
+      escape_translation("hello world"),
+      escape_translation("simple string"),
+    ]);
+
     assert_eq!(escape_translation(""), "");
   }
 
   #[test]
   fn escape_backticks() {
-    assert_eq!(escape_translation("hello `world`"), "hello \\`world\\`");
-    assert_eq!(
+    insta::assert_debug_snapshot!([
+      escape_translation("hello `world`"),
       escape_translation("`backtick at start"),
-      "\\`backtick at start"
-    );
-    assert_eq!(escape_translation("backtick at end`"), "backtick at end\\`");
+      escape_translation("backtick at end`"),
+      escape_translation("```backticks```"),
+    ]);
   }
 
   #[test]
   fn escape_backslashes() {
-    assert_eq!(escape_translation("path\\to\\file"), "path\\\\to\\\\file");
-    assert_eq!(
+    insta::assert_debug_snapshot!([
+      escape_translation("path\\to\\file"),
       escape_translation("escape \\n newline"),
-      "escape \\\\n newline"
-    );
-    assert_eq!(escape_translation("\\"), "\\\\");
+      escape_translation("\\"),
+      escape_translation("\\\\\\\\"),
+    ]);
   }
 
   #[test]
   fn escape_dollar_brace() {
-    assert_eq!(escape_translation("price: ${amount}"), "price: \\${amount}");
-    assert_eq!(
+    insta::assert_debug_snapshot!([
+      escape_translation("price: ${amount}"),
       escape_translation("${start} to ${end}"),
-      "\\${start} to \\${end}"
-    );
-    assert_eq!(escape_translation("just $ dollar"), "just $ dollar");
-    assert_eq!(escape_translation("$"), "$");
-    assert_eq!(escape_translation("$notbrace"), "$notbrace");
+      escape_translation("just $ dollar"),
+      escape_translation("$"),
+      escape_translation("$notbrace"),
+      escape_translation("$$$${multiple}"),
+    ]);
   }
 
   #[test]
   fn preserve_interpolations() {
-    assert_eq!(escape_translation("Hello {name}"), "Hello {name}");
-    assert_eq!(
+    insta::assert_debug_snapshot!([
+      escape_translation("Hello {name}"),
       escape_translation("Count: {count:number}"),
-      "Count: {count:number}"
-    );
-    assert_eq!(
       escape_translation("{greeting:string}, {name}!"),
-      "{greeting:string}, {name}!"
-    );
-    assert_eq!(
       escape_translation("Multiple {a} and {b:number} interpolations"),
-      "Multiple {a} and {b:number} interpolations"
-    );
+    ]);
   }
 
   #[test]
   fn combined_escaping() {
-    assert_eq!(
+    insta::assert_debug_snapshot!([
       escape_translation("Use `${var}` or {name}"),
-      "Use \\`\\${var}\\` or {name}"
-    );
-    assert_eq!(
       escape_translation("Path: C:\\Users\\{username}"),
-      "Path: C:\\\\Users\\\\{username}"
-    );
-    assert_eq!(
       escape_translation("`Hello ${world}` says {name:string}"),
-      "\\`Hello \\${world}\\` says {name:string}"
-    );
+      escape_translation("\\`${}\\`"),
+      escape_translation("`\\${test}\\`"),
+      escape_translation("Before{var}\\after`"),
+      escape_translation("`${start}{middle:type}${end}`"),
+    ]);
+  }
+
+  #[test]
+  fn unicode_and_non_ascii_keys() {
+    insta::assert_debug_snapshot!([
+      sanitize_key("café"),
+      sanitize_key("naïve"),
+      sanitize_key("测试"),
+      sanitize_key("🚀rocket"),
+      sanitize_key("mix_中文_test"),
+      sanitize_key("émoji🎉test"),
+    ]);
+  }
+
+  #[test]
+  fn brace_escape_sequences() {
+    insta::assert_debug_snapshot!([
+      escape_translation("Literal braces {{hello}}"),
+      escape_translation("Mixed {name} and {{literal}}"),
+      escape_translation("Only escapes {{}} here"),
+      escape_translation("With template literal ${{var}}"),
+      escape_translation("Complex {{start}} ${middle} {{end}}"),
+      escape_translation("Brace escapes with backticks `{{test}}`"),
+      escape_translation("Single } characters are fine"),
+    ]);
   }
 }

@@ -191,20 +191,28 @@ impl Translation {
     let mut current_name = String::new();
     let mut current_type = String::new();
 
-    for (byte_index, c) in s.char_indices() {
+    let mut chars = s.char_indices().peekable();
+
+    while let Some((byte_index, c)) = chars.next() {
       if c == '{' {
+        // Check if this is an escape sequence {{
+        if chars.peek().is_some_and(|&(_, next_char)| next_char == '{') {
+          // Skip the escape sequence
+          chars.next();
+          continue;
+        }
+
+        if parsing_interpolation {
+          // We're already parsing an interpolation and found another opening brace
+          // This indicates nested braces, which is invalid
+          return Err(WoofError::InvalidInterpolation(s.to_string()));
+        }
         start_byte_index = byte_index;
         parsing_interpolation = true;
         continue;
       }
 
       if !parsing_interpolation {
-        continue;
-      }
-
-      // Skip escaped '{'
-      if c == '{' && current_name.is_empty() {
-        parsing_interpolation = false;
         continue;
       }
 
@@ -215,6 +223,7 @@ impl Translation {
       }
 
       if c == '}' {
+        // This is the end of the interpolation
         let typename = if !current_type.is_empty() {
           let typename = current_type.clone();
           current_type.clear();
@@ -306,6 +315,7 @@ pub struct Module {
   pub modules: BTreeMap<Key, Module>,
 }
 
+#[derive(Debug)]
 pub struct ParsedInterpolation {
   pub type_: InterpolationType,
   pub name: String,
@@ -433,64 +443,12 @@ mod tests {
       .insert(Key::new("count"), count_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(
-      result,
-      Some("Hello ${args.name}, you have ${args.count} messages".to_string())
-    );
+    insta::assert_snapshot!(result.unwrap());
   }
 
   #[test]
   fn multibyte_characters_with_interpolation() {
-    // Test that interpolation replacement works correctly with multi-byte characters
-    // Multi-byte characters (like 🌍) have different byte lengths vs character counts,
-    // so this ensures we use byte indices for string replacement, not character indices
-    let input = "Hello 🌍 world! Welcome {name}!";
-    let translation = Translation::new(input);
-
-    // Parse interpolations - should correctly track byte indices
-    let interpolations = translation.parse_interpolations().unwrap();
-
-    // Should find one interpolation
-    assert_eq!(interpolations.len(), 1);
-    let interp = &interpolations[0];
-    assert_eq!(interp.name, "name");
-
-    // Set up message for template generation
-    let mut message = Message::default();
-    let locale = Locale("en".to_string());
-
-    message.translation.insert(locale.clone(), translation);
-
-    // Add interpolation info with the parsed byte ranges
-    let mut name_interp = Interpolation::default();
-    name_interp
-      .ranges
-      .insert(locale.clone(), (interp.start, interp.end));
-    message.interpolations.insert(Key::new("name"), name_interp);
-
-    // Generate template - should correctly replace {name} with ${args.name}
-    let result = message.template_for_locale(&locale);
-
-    // Verify the result is correct
-    assert_eq!(
-      result,
-      Some("Hello 🌍 world! Welcome ${args.name}!".to_string()),
-      "Interpolation replacement failed with multi-byte characters"
-    );
-  }
-
-  #[test]
-  fn various_multibyte_characters_with_interpolations() {
-    // Test with various multi-byte characters: emoji, accented chars, CJK characters
-    let test_cases = vec![
-      ("Café {name}", "Café ${args.name}"),
-      ("中文 {count:number} 测试", "中文 ${args.count} 测试"),
-      ("🚀🌟✨ {msg} 🎉", "🚀🌟✨ ${args.msg} 🎉"),
-      ("Ñiño {age:number} años", "Ñiño ${args.age} años"),
-      ("👨‍👩‍👧‍👦 family {size:number}", "👨‍👩‍👧‍👦 family ${args.size}"),
-    ];
-
-    for (input, expected) in test_cases {
+    let test_interpolation = |input: &str| {
       let translation = Translation::new(input);
       let interpolations = translation.parse_interpolations().unwrap();
 
@@ -500,8 +458,10 @@ mod tests {
 
       // Add all found interpolations
       for interp in interpolations {
-        let mut interpolation_obj = Interpolation::default();
-        interpolation_obj.type_ = interp.type_;
+        let mut interpolation_obj = Interpolation {
+          type_: interp.type_,
+          ..Default::default()
+        };
         interpolation_obj
           .ranges
           .insert(locale.clone(), (interp.start, interp.end));
@@ -510,16 +470,17 @@ mod tests {
           .insert(Key::new(&interp.name), interpolation_obj);
       }
 
-      let result = message.template_for_locale(&locale);
-      assert_eq!(
-        result,
-        Some(expected.to_string()),
-        "Failed for input: '{}', expected: '{}', got: '{:?}'",
-        input,
-        expected,
-        result
-      );
-    }
+      message.template_for_locale(&locale).unwrap()
+    };
+
+    insta::assert_debug_snapshot!([
+      test_interpolation("Hello 🌍 world! Welcome {name}!"),
+      test_interpolation("Café {name}"),
+      test_interpolation("中文 {count:number} 测试"),
+      test_interpolation("🚀🌟✨ {msg} 🎉"),
+      test_interpolation("Ñiño {age:number} años"),
+      test_interpolation("👨‍👩‍👧‍👦 family {size:number}"),
+    ]);
   }
 
   #[test]
@@ -527,7 +488,6 @@ mod tests {
     let mut message = Message::default();
     let locale = Locale("en".to_string());
 
-    // Add a translation with interpolations that need sanitization
     message.translation.insert(
       locale.clone(),
       Translation::new("Class: {class}, function: {function}"),
@@ -547,10 +507,7 @@ mod tests {
       .insert(Key::new("function"), func_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(
-      result,
-      Some("Class: ${args.class_}, function: ${args.function_}".to_string())
-    );
+    insta::assert_snapshot!(result.unwrap());
   }
 
   #[test]
@@ -581,10 +538,7 @@ mod tests {
     message.interpolations.insert(Key::new("c"), c_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(
-      result,
-      Some("${args.a} ${args.b} ${args.c} ${args.d}".to_string())
-    );
+    insta::assert_snapshot!(result.unwrap());
   }
 
   #[test]
@@ -601,7 +555,6 @@ mod tests {
     let mut message = Message::default();
     let locale = Locale("en".to_string());
 
-    // Add a translation that needs escaping
     message
       .translation
       .insert(locale.clone(), Translation::new("Use `${var}` or {name}"));
@@ -613,15 +566,12 @@ mod tests {
     message.interpolations.insert(Key::new("name"), name_interp);
 
     let result = message.template_for_locale(&locale);
-    assert_eq!(
-      result,
-      Some("Use \\`\\${var}\\` or ${args.name}".to_string())
-    );
+    insta::assert_snapshot!(result.unwrap());
   }
 
   #[test]
   fn valid_interpolation_identifiers() {
-    let valid_cases = vec![
+    let cases = [
       "Hello {name}",
       "Count: {count:number}",
       "User {userId}",
@@ -632,21 +582,15 @@ mod tests {
       "Mixed {value1} and {item_2}",
     ];
 
-    for input in valid_cases {
-      let translation = Translation::new(input);
-      let result = translation.parse_interpolations();
-      assert!(
-        result.is_ok(),
-        "Expected valid interpolation for input: '{}', but got error: {:?}",
-        input,
-        result.err()
-      );
+    for case in cases {
+      let translation = Translation::new(case);
+      assert!(translation.parse_interpolations().is_ok());
     }
   }
 
   #[test]
   fn invalid_interpolation_identifiers() {
-    let invalid_cases = vec![
+    let invalid_cases = [
       ("Number start {123name}", "123name"),
       ("Hyphen {user-name}", "user-name"),
       ("Space {user name}", "user name"),
@@ -664,26 +608,13 @@ mod tests {
 
       match result {
         Err(WoofError::InvalidInterpolationIdentifier(name)) => {
-          if !expected_invalid_name.is_empty() {
-            assert_eq!(
-              name, expected_invalid_name,
-              "Expected invalid identifier '{}' for input '{}', but got '{}'",
-              expected_invalid_name, input, name
-            );
-          }
-        }
-        Err(other_error) => {
-          panic!(
-            "Expected InvalidInterpolationIdentifier for input '{}', but got different error: {:?}",
-            input, other_error
+          assert_eq!(
+            name, expected_invalid_name,
+            "Expected invalid identifier '{}' for input '{}', but got '{}'",
+            expected_invalid_name, input, name
           );
         }
-        Ok(_) => {
-          panic!(
-            "Expected invalid interpolation identifier for input: '{}', but parsing succeeded",
-            input
-          );
-        }
+        _ => panic!("Unexpected result: {:?}", result),
       }
     }
   }
@@ -700,5 +631,178 @@ mod tests {
       }
       _ => panic!("Expected InvalidInterpolationIdentifier error"),
     }
+  }
+
+  #[test]
+  fn interpolation_edge_cases() {
+    let parse = |input: &str| {
+      let translation = Translation::new(input);
+      translation.parse_interpolations()
+    };
+
+    insta::assert_debug_snapshot!([
+      parse("{}"),
+      parse("{:string}"),
+      parse("{a}{b}{c}"),
+      parse("{a}and{b}"),
+      parse("{outer{inner}}"),
+      parse("\\{invalid_interpolation\\}"),
+      parse("{{not_interpolation}}"),
+      parse("} and { separate"),
+      parse("{name without closing"),
+    ]);
+  }
+
+  #[test]
+  fn complex_interpolation_scenarios() {
+    let parse = |input: &str| {
+      let translation = Translation::new(input);
+      match translation.parse_interpolations() {
+        Ok(interpolations) => {
+          let parsed: Vec<(String, InterpolationType)> = interpolations
+            .into_iter()
+            .map(|i| (i.name, i.type_))
+            .collect();
+          Ok(parsed)
+        }
+        Err(e) => Err(format!("{:?}", e)),
+      }
+    };
+
+    insta::assert_debug_snapshot!([
+      parse("Mixed types: {name:string} has {count:number} items"),
+      parse("Long interpolation names: {veryLongInterpolationNameThatShouldStillWork:string}"),
+      parse("Multiple same type: {first:string} and {second:string} and {third:string}"),
+      parse("Interpolations with unicode text: 🎉 {celebration:string} 🎊 {party:number} 🥳"),
+      parse("Interpolations at boundaries: {start}middle text{end}"),
+      parse("Only interpolations: {a}{b}{c}{d}"),
+    ]);
+  }
+
+  #[test]
+  fn template_generation_edge_cases() {
+    let generate = |input: &str| {
+      let mut message = Message::default();
+      let locale = Locale("en".to_string());
+
+      let translation = Translation::new(input);
+      let interpolations = translation.parse_interpolations().unwrap_or_default();
+
+      message.translation.insert(locale.clone(), translation);
+
+      // Add all found interpolations
+      for interp in interpolations {
+        let mut interpolation_obj = Interpolation {
+          type_: interp.type_,
+          ..Default::default()
+        };
+        interpolation_obj
+          .ranges
+          .insert(locale.clone(), (interp.start, interp.end));
+        message
+          .interpolations
+          .insert(Key::new(&interp.name), interpolation_obj);
+      }
+
+      message.template_for_locale(&locale)
+    };
+
+    insta::assert_debug_snapshot!([
+      generate(""),
+      generate("No interpolations here"),
+      generate("{single}"),
+      generate("Only text no braces"),
+      generate("Start {a} middle {b} end"),
+      generate("{a}{b}{c}"),
+      generate("Unicode 🌍 {name} more unicode 🎉"),
+    ]);
+  }
+
+  #[test]
+  fn error_message_snapshots() {
+    let parse = |input: &str| {
+      let translation = Translation::new(input);
+      match translation.parse_interpolations() {
+        Ok(_) => "No error (unexpected)".to_string(),
+        Err(e) => format!("{}", e),
+      }
+    };
+
+    insta::assert_debug_snapshot!([
+      parse("{123invalid}"),
+      parse("{user-name}"),
+      parse("{}"),
+      parse("{unclosed"),
+      parse("{name:invalid_type}"),
+      parse("{user@domain}"),
+      parse("{name\\with\\backslash}"),
+      parse("{outer{inner}}"),
+    ]);
+  }
+
+  #[test]
+  fn brace_escape_sequences() {
+    let parse = |input: &str| {
+      let translation = Translation::new(input);
+      match translation.parse_interpolations() {
+        Ok(interpolations) => {
+          let parsed: Vec<(String, InterpolationType, usize, usize)> = interpolations
+            .into_iter()
+            .map(|i| (i.name, i.type_, i.start, i.end))
+            .collect();
+          Ok(parsed)
+        }
+        Err(e) => Err(format!("{:?}", e)),
+      }
+    };
+
+    insta::assert_debug_snapshot!([
+      parse("{{hello}}"),
+      parse("{name} and {{literal}}"),
+      parse("{{}} here"),
+      parse("{{start}} {name}"),
+      parse("{{first}} {{second}}"),
+      parse("{{text}} with {name:string} and {{more}}"),
+      parse("Just } here"),
+      parse("{{start"),
+      parse("{name} test"),
+      parse("{{{{"),
+    ]);
+  }
+
+  #[test]
+  fn brace_escapes_in_template_generation() {
+    let generate = |input: &str| {
+      let mut message = Message::default();
+      let locale = Locale("en".to_string());
+
+      let translation = Translation::new(input);
+      let interpolations = translation.parse_interpolations().unwrap_or_default();
+
+      message.translation.insert(locale.clone(), translation);
+
+      // Add all found interpolations
+      for interp in interpolations {
+        let mut interpolation_obj = Interpolation {
+          type_: interp.type_,
+          ..Default::default()
+        };
+        interpolation_obj
+          .ranges
+          .insert(locale.clone(), (interp.start, interp.end));
+        message
+          .interpolations
+          .insert(Key::new(&interp.name), interpolation_obj);
+      }
+
+      message.template_for_locale(&locale)
+    };
+
+    insta::assert_debug_snapshot!([
+      generate("Welcome {{user}} and {name}"),
+      generate("Price: ${{amount}} for {item}"),
+      generate("Braces: {{}} and {count:number}"),
+      generate("Start {{literal}} middle {var} end {{more}}"),
+    ]);
   }
 }

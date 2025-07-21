@@ -1,0 +1,64 @@
+---
+source: src/parse.rs
+expression: "[parse(\"{{hello}}\"), parse(\"{name} and {{literal}}\"), parse(\"{{}} here\"),\nparse(\"{{start}} {name}\"), parse(\"{{first}} {{second}}\"),\nparse(\"{{text}} with {name:string} and {{more}}\"), parse(\"Just } here\"),\nparse(\"{{start\"), parse(\"{name} test\"), parse(\"{{{{\"),]"
+---
+[
+    Ok(
+        [],
+    ),
+    Ok(
+        [
+            (
+                "name",
+                None,
+                0,
+                5,
+            ),
+        ],
+    ),
+    Ok(
+        [],
+    ),
+    Ok(
+        [
+            (
+                "name",
+                None,
+                10,
+                15,
+            ),
+        ],
+    ),
+    Ok(
+        [],
+    ),
+    Ok(
+        [
+            (
+                "name",
+                String,
+                14,
+                26,
+            ),
+        ],
+    ),
+    Ok(
+        [],
+    ),
+    Ok(
+        [],
+    ),
+    Ok(
+        [
+            (
+                "name",
+                None,
+                0,
+                5,
+            ),
+        ],
+    ),
+    Ok(
+        [],
+    ),
+]

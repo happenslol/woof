@@ -1,0 +1,10 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"Hello {name}\"),\nescape_translation(\"Count: {count:number}\"),\nescape_translation(\"{greeting:string}, {name}!\"),\nescape_translation(\"Multiple {a} and {b:number} interpolations\"),]"
+---
+[
+    "Hello {name}",
+    "Count: {count:number}",
+    "{greeting:string}, {name}!",
+    "Multiple {a} and {b:number} interpolations",
+]

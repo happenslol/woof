@@ -1,0 +1,12 @@
+---
+source: src/sanitize.rs
+expression: "[escape_translation(\"price: ${amount}\"),\nescape_translation(\"${start} to ${end}\"), escape_translation(\"just $ dollar\"),\nescape_translation(\"$\"), escape_translation(\"$notbrace\"),\nescape_translation(\"$$$${multiple}\"),]"
+---
+[
+    "price: \\${amount}",
+    "\\${start} to \\${end}",
+    "just $ dollar",
+    "$",
+    "$notbrace",
+    "$$$\\${multiple}",
+]

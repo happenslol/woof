@@ -7,3 +7,6 @@ edition = "2024"
 clap = { version = "4.5.39", features = ["derive"] }
 toml = "0.8.22"
 thiserror = "2.0.12"
+
+[dev-dependencies]
+insta = "1.34"
