@@ -35,6 +35,7 @@
         root = ./.;
         fileset = pkgs.lib.fileset.unions [
           (craneLib.fileset.commonCargoSources ./.)
+          ./src/snapshots
           ./tests
         ];
       };
