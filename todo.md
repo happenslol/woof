@@ -13,14 +13,6 @@
 - [ ] Detect missing translations
 - [ ] Report spanned errors using ariadne/miette
 
-## Benchmarks
-
-Not critical _at all_, but might be fun.
-
-- [ ] Keep string references to original toml file
-- [ ] Pre-allocate as much as possible
-- [ ] Avoid string joining
-
 ## Build
 
 - [ ] Configure static binary build
@@ -28,4 +20,4 @@ Not critical _at all_, but might be fun.
 
 ## Bugs
 
-- [ ] Correctly remove escaped braces from interpolations (`{{` -> `{`)
+- [x] Correctly remove escaped braces from interpolations (`{{` -> `{`)
