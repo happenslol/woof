@@ -305,6 +305,11 @@ impl Message {
       result.replace_range(start..=end, &template_var);
     }
 
+    // Replace escaped braces {{ with literal braces {
+    // This is safe to do after interpolation replacement since all real
+    // interpolations are now in ${args.name} format
+    result = result.replace("{{", "{");
+
     Some(result)
   }
 }
@@ -799,10 +804,11 @@ mod tests {
     };
 
     insta::assert_debug_snapshot!([
-      generate("Welcome {{user}} and {name}"),
-      generate("Price: ${{amount}} for {item}"),
-      generate("Braces: {{}} and {count:number}"),
-      generate("Start {{literal}} middle {var} end {{more}}"),
+      generate("Welcome {{user} and {name}"),
+      generate("Price: ${{amount} for {item}"),
+      generate("Braces: {{} and {count:number}"),
+      generate("Start {{literal} middle {var} end {{more}"),
+      generate("Escape only {{starting double braces}}"),
     ]);
   }
 }

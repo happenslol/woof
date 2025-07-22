@@ -1,18 +1,21 @@
 ---
 source: src/parse.rs
-expression: "[generate(\"Welcome {{user}} and {name}\"),\ngenerate(\"Price: ${{amount}} for {item}\"),\ngenerate(\"Braces: {{}} and {count:number}\"),\ngenerate(\"Start {{literal}} middle {var} end {{more}}\"),]"
+expression: "[generate(\"Welcome {{user} and {name}\"),\ngenerate(\"Price: ${{amount} for {item}\"),\ngenerate(\"Braces: {{} and {count:number}\"),\ngenerate(\"Start {{literal} middle {var} end {{more}\"),\ngenerate(\"Escape only {{starting double braces}}\"),]"
 ---
 [
     Some(
-        "Welcome {{user}} and ${args.name}",
+        "Welcome {user} and ${args.name}",
     ),
     Some(
-        "Price: \\${{amount}} for ${args.item}",
+        "Price: \\${amount} for ${args.item}",
     ),
     Some(
-        "Braces: {{}} and ${args.count}",
+        "Braces: {} and ${args.count}",
     ),
     Some(
-        "Start {{literal}} middle ${args.var_} end {{more}}",
+        "Start {literal} middle ${args.var_} end {more}",
+    ),
+    Some(
+        "Escape only {starting double braces}}",
     ),
 ]
