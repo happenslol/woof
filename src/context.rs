@@ -1,5 +1,8 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 
+use miette::Diagnostic;
+use thiserror::Error;
+
 use crate::{
   interpolations::{Interpolation, InterpolationParseError, InterpolationType},
   parse::{Key, Locale, Message, Module},
@@ -78,22 +81,31 @@ impl Context<'_> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error, Diagnostic)]
+#[error("Unsupported value type at {locale}:{path}: {value_type}")]
 pub struct UnsupportedValueType {
   locale: Locale,
   path: String,
   value_type: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error, Diagnostic)]
+#[error("Interpolation at {locale}:{path} contains errors")]
+#[diagnostic()]
 pub struct InterpolationError {
   locale: Locale,
   path: String,
+
+  #[source_code]
   translation: String,
+
+  #[related]
   errors: Vec<InterpolationParseError>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Error, Diagnostic)]
+#[error("Errors found in translation files")]
+#[diagnostic(code(some_code))]
 pub struct Diagnostics {
   pub unsupported_value_types: Vec<UnsupportedValueType>,
   pub interpolation_type_mismatches: HashMap<String, HashSet<(Locale, InterpolationType)>>,

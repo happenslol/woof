@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use miette::{Diagnostic, SourceSpan};
+use thiserror::Error;
+
 use crate::{
   parse::{Locale, Translation},
   sanitize::is_valid_identifier,
@@ -60,22 +63,26 @@ impl InterpolationType {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Error, Diagnostic)]
 pub enum InterpolationParseError {
-  Empty {
-    start: usize,
-  },
-  InvalidIdentifier {
-    start: usize,
-    end: usize,
-  },
+  #[error("Empty interpolation identifier")]
+  #[diagnostic()]
+  Empty(#[label("There should be a name here")] SourceSpan),
+
+  #[error("Invalid interpolation identifier")]
+  #[diagnostic()]
+  InvalidIdentifier(#[label("Contains invalid characters")] SourceSpan),
+
+  #[error("Unclosed interpolation")]
+  #[diagnostic()]
+  Unclosed(#[label("No closing brace")] SourceSpan),
+
+  #[error("Invalid interpolation type")]
+  #[diagnostic()]
   InvalidType {
-    start: usize,
-    end: usize,
+    #[label("This type is not supported")]
+    at: SourceSpan,
     type_: String,
-  },
-  Unclosed {
-    start: usize,
   },
 }
 
@@ -128,10 +135,9 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 
         result
           .errors
-          .push(InterpolationParseError::InvalidIdentifier {
-            start: start_byte_index,
-            end: byte_index + offset,
-          });
+          .push(InterpolationParseError::InvalidIdentifier(
+            (start_byte_index + 1..byte_index + offset).into(),
+          ));
         continue;
       }
 
@@ -168,8 +174,7 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
           Ok(t) => t,
           Err(()) => {
             result.errors.push(InterpolationParseError::InvalidType {
-              start: start_byte_index,
-              end: byte_index,
+              at: (start_byte_index + current_name.len() + 2..byte_index).into(),
               type_: current_type.clone(),
             });
 
@@ -219,9 +224,9 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 
   if parsing_interpolation {
     // Unclosed interpolation
-    result.errors.push(InterpolationParseError::Unclosed {
-      start: start_byte_index,
-    });
+    result.errors.push(InterpolationParseError::Unclosed(
+      (start_byte_index + 1..s.len()).into(),
+    ));
   }
 
   result
@@ -232,14 +237,13 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 /// - Can only contain alphanumeric characters and underscores
 fn validate_interpolation_name(start: usize, name: &str) -> Result<(), InterpolationParseError> {
   if name.is_empty() {
-    return Err(InterpolationParseError::Empty { start });
+    return Err(InterpolationParseError::Empty(start.into()));
   }
 
   if !is_valid_identifier(name) {
-    return Err(InterpolationParseError::InvalidIdentifier {
-      start,
-      end: start + name.len(),
-    });
+    return Err(InterpolationParseError::InvalidIdentifier(
+      (start + 1, name.len()).into(),
+    ));
   }
 
   Ok(())

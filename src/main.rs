@@ -25,7 +25,12 @@ fn main() -> Result<(), WoofError> {
   let config = Args::parse();
   let (modules, diagnostics) = collect::collect_and_build_modules(&config.input_dir)?;
 
-  println!("{:#?}", diagnostics);
+  if !diagnostics.is_empty() {
+    let handler = miette::GraphicalReportHandler::new().with_show_related_as_nested(true);
+    let mut out = String::new();
+    handler.render_report(&mut out, &diagnostics).unwrap();
+    println!("{}", out);
+  }
 
   // We need to collect locale names from the module structure
   let locale_names = collect_locale_names(&modules);
