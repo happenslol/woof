@@ -1,4 +1,5 @@
-use crate::parse::{Locale, Module, Result, WoofError, build_flat_module, build_namespaced_module};
+use crate::errors::WoofError;
+use crate::parse::{Locale, Module, build_flat_module, build_namespaced_module};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -18,7 +19,7 @@ pub struct NamespacedFile {
 }
 
 /// Determines the file mode by examining the files in the directory
-fn detect_file_mode(dir: &Path) -> Result<FileMode> {
+fn detect_file_mode(dir: &Path) -> Result<FileMode, WoofError> {
   let entries = fs::read_dir(dir)?;
   let toml_files = entries
     .filter_map(|e| e.ok())
@@ -54,7 +55,7 @@ fn detect_file_mode(dir: &Path) -> Result<FileMode> {
 }
 
 /// Collects locale files from a directory (flat mode)
-fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>> {
+fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>, WoofError> {
   let dir = dir.as_ref();
   let mut result = HashMap::new();
 
@@ -80,14 +81,24 @@ fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>
 
     let contents = fs::read_to_string(&path)?;
     let locale = Locale(stem.to_string());
-    result.insert(locale, toml::from_str(&contents)?);
+    let parsed = toml::from_str(&contents).map_err(|err| {
+      let filename = path
+        .file_name()
+        .map(|s| s.to_string_lossy())
+        .unwrap_or_default()
+        .to_string();
+
+      WoofError::Toml(filename, err)
+    })?;
+
+    result.insert(locale, parsed);
   }
 
   Ok(result)
 }
 
 /// Collects namespaced files from a directory
-fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>> {
+fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, WoofError> {
   let dir = dir.as_ref();
   let mut result = Vec::new();
 
@@ -109,14 +120,21 @@ fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile
     // Parse namespace.locale format
     let parts: Vec<&str> = stem.split('.').collect();
     if parts.len() != 2 {
-      return Err(WoofError::InvalidNamespacedFileName(stem.to_string()));
+      return Err(WoofError::InvalidFileName(stem.to_string()));
     }
 
     let namespace = parts[0].to_string();
     let locale = Locale(parts[1].to_string());
 
     let contents = fs::read_to_string(&path)?;
-    let content: Value = toml::from_str(&contents)?;
+    let content: Value = toml::from_str(&contents).map_err(|err| {
+      let filename = path
+        .file_name()
+        .map(|s| s.to_string_lossy())
+        .unwrap_or_default()
+        .to_string();
+      WoofError::Toml(filename, err)
+    })?;
 
     result.push(NamespacedFile {
       namespace,
@@ -129,7 +147,7 @@ fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile
 }
 
 /// Collects and builds modules from translation files, supporting both flat and namespaced modes
-pub fn collect_and_build_modules<P: AsRef<Path>>(dir: P) -> Result<Module> {
+pub fn collect_and_build_modules<P: AsRef<Path>>(dir: P) -> Result<Module, WoofError> {
   let dir = dir.as_ref();
   let mode = detect_file_mode(dir)?;
 

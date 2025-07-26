@@ -1,4 +1,5 @@
-use crate::parse::{Locale, Module, Result, WoofError};
+use crate::errors::WoofError;
+use crate::parse::{Locale, Module};
 use std::fs;
 use std::io::{BufWriter, Write};
 use std::iter::repeat_n;
@@ -6,9 +7,11 @@ use std::path::Path;
 
 static DEFAULT_LOCALE: &str = "en";
 
-pub fn generate(dir: &Path, locales: &[Locale], module: &Module) -> Result<()> {
+pub fn generate(dir: &Path, locales: &[Locale], module: &Module) -> Result<(), WoofError> {
   if dir.is_file() {
-    return Err(WoofError::OutputFileExists(dir.to_path_buf()));
+    return Err(WoofError::OutputFileExists(
+      dir.to_string_lossy().to_string(),
+    ));
   }
 
   if dir.exists() {
@@ -37,7 +40,7 @@ export * as m from "./root""#
   write_module(dir, 0, module, &locales_union)
 }
 
-fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Result<()> {
+fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Result<(), WoofError> {
   if module.messages.is_empty() && module.modules.is_empty() {
     return Ok(());
   }

@@ -2,78 +2,44 @@ use std::collections::{BTreeMap, HashMap};
 use thiserror::Error;
 use toml::{Table, Value};
 
-use crate::sanitize::{escape_translation, sanitize_key};
-
-pub type Result<T> = std::result::Result<T, WoofError>;
+use crate::{
+  errors::WoofError,
+  sanitize::{escape_translation, sanitize_key},
+};
 
 /// Validates that an interpolation identifier follows the rules:
 /// - Must start with a letter (a-z, A-Z)
 /// - Can only contain alphanumeric characters and underscores
-fn validate_interpolation_name(name: &str) -> Result<()> {
+fn validate_interpolation_name(name: &str) -> Result<(), ParseInterpolationError> {
   if name.is_empty() {
-    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+    return Err(ParseInterpolationError::InvalidIdentifier(name.to_string()));
   }
 
   let mut chars = name.chars();
 
   // First character must be a letter
   if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
-    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+    return Err(ParseInterpolationError::InvalidIdentifier(name.to_string()));
   }
 
   // Remaining characters must be alphanumeric or underscore
   if !chars.all(|c| c.is_ascii_alphanumeric() || c == '_') {
-    return Err(WoofError::InvalidInterpolationIdentifier(name.to_string()));
+    return Err(ParseInterpolationError::InvalidIdentifier(name.to_string()));
   }
 
   Ok(())
-}
-
-#[derive(Error, Debug)]
-pub enum WoofError {
-  #[error("IO error: {0}")]
-  Io(#[from] std::io::Error),
-
-  #[error("Path `{0}` is not a directory")]
-  InvalidInputDirectory(String),
-
-  #[error("Output file already exists at `{0}`")]
-  OutputFileExists(std::path::PathBuf),
-
-  #[error("Root of TOML file is not a table")]
-  RootNotTable,
-
-  #[error("Invalid TOML: {0}")]
-  Toml(#[from] toml::de::Error),
-
-  #[error("Unsupported value type `{typename}` at path `{path}`")]
-  UnsupportedValueType { typename: String, path: String },
-
-  #[error("Invalid interpolation format in string: {0}")]
-  InvalidInterpolation(String),
-
-  #[error(
-    "Invalid interpolation identifier '{0}': must start with a letter and contain only alphanumeric characters and underscores"
-  )]
-  InvalidInterpolationIdentifier(String),
-
-  #[error("Interpolation type mismatch between locales")]
-  InterpolationTypeMismatch,
-
-  #[error("Mixed file naming modes detected: found both flat and namespaced files")]
-  MixedFileModes,
-
-  #[error("Invalid namespaced file name: {0} (expected format: namespace.locale.toml)")]
-  InvalidNamespacedFileName(String),
-
-  #[error(transparent)]
-  InterpolationError(#[from] ParseInterpolationError),
 }
 
 #[derive(Debug, Error)]
 pub enum ParseInterpolationError {
   #[error("Unknown interpolation type `{0}`")]
   UnknownType(String),
+
+  #[error("Interpolation identifier `{0}`")]
+  InvalidIdentifier(String),
+
+  #[error("Invalid interpolation format in string: {0}")]
+  InvalidInterpolation(String),
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -181,7 +147,7 @@ impl Translation {
     Self(escaped)
   }
 
-  pub fn parse_interpolations(&self) -> Result<Vec<ParsedInterpolation>> {
+  pub fn parse_interpolations(&self) -> Result<Vec<ParsedInterpolation>, ParseInterpolationError> {
     let s = &self.0;
     let mut result = Vec::new();
 
@@ -205,7 +171,7 @@ impl Translation {
         if parsing_interpolation {
           // We're already parsing an interpolation and found another opening brace
           // This indicates nested braces, which is invalid
-          return Err(WoofError::InvalidInterpolation(s.to_string()));
+          return Err(ParseInterpolationError::InvalidInterpolation(s.to_string()));
         }
         start_byte_index = byte_index;
         parsing_interpolation = true;
@@ -256,7 +222,8 @@ impl Translation {
     }
 
     if parsing_interpolation {
-      return Err(WoofError::InvalidInterpolation(s.to_string()));
+      // Unclosed interpolation
+      return Err(ParseInterpolationError::InvalidInterpolation(s.to_string()));
     }
 
     Ok(result)
@@ -332,7 +299,7 @@ pub struct ParsedInterpolation {
 /// children
 pub fn build_namespaced_module(
   namespaces: HashMap<String, HashMap<Locale, Value>>,
-) -> Result<Module> {
+) -> Result<Module, WoofError> {
   let mut modules = std::collections::BTreeMap::new();
 
   for (namespace, locales) in namespaces {
@@ -347,13 +314,13 @@ pub fn build_namespaced_module(
   })
 }
 
-pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module> {
+pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module, WoofError> {
   let mut messages = BTreeMap::new();
   let mut modules = BTreeMap::new();
 
   for (locale, value) in locales {
     let Value::Table(root) = value else {
-      return Err(WoofError::RootNotTable);
+      unreachable!("root is always a table");
     };
 
     build_module(&locale, root, &mut messages, &mut modules)?;
@@ -367,7 +334,7 @@ fn build_module(
   table: Table,
   messages: &mut BTreeMap<Key, Message>,
   modules: &mut BTreeMap<Key, Module>,
-) -> Result<()> {
+) -> Result<(), WoofError> {
   for (key, value) in table {
     let key = Key::new(&key);
 
@@ -375,7 +342,10 @@ fn build_module(
       Value::String(s) => {
         let message = messages.entry(key.clone()).or_default();
         let translation = Translation::new(&s);
-        let interpolations = translation.parse_interpolations()?;
+        let Ok(interpolations) = translation.parse_interpolations() else {
+          // TODO: Add to context
+          continue;
+        };
 
         message
           .translation
@@ -395,7 +365,8 @@ fn build_module(
             .insert(locale.clone(), (interpolation.start, interpolation.end));
 
           if interpolation.type_ != entry.type_ {
-            return Err(WoofError::InterpolationTypeMismatch);
+            // TODO: Add to context
+            continue;
           }
         }
       }
@@ -410,10 +381,8 @@ fn build_module(
       }
 
       _ => {
-        return Err(WoofError::UnsupportedValueType {
-          path: key.literal.clone(),
-          typename: value.type_str().to_string(),
-        });
+        // TODO: Add to context
+        continue;
       }
     }
   }
@@ -612,7 +581,7 @@ mod tests {
       let result = translation.parse_interpolations();
 
       match result {
-        Err(WoofError::InvalidInterpolationIdentifier(name)) => {
+        Err(ParseInterpolationError::InvalidIdentifier(name)) => {
           assert_eq!(
             name, expected_invalid_name,
             "Expected invalid identifier '{}' for input '{}', but got '{}'",
@@ -631,7 +600,7 @@ mod tests {
     let result = translation.parse_interpolations();
 
     match result {
-      Err(WoofError::InvalidInterpolationIdentifier(name)) => {
+      Err(ParseInterpolationError::InvalidIdentifier(name)) => {
         assert_eq!(name, "123name");
       }
       _ => panic!("Expected InvalidInterpolationIdentifier error"),

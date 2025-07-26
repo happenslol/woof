@@ -1,13 +1,12 @@
 mod collect;
+mod errors;
 mod generate;
 mod parse;
 mod sanitize;
 
 use clap::Parser;
+use errors::WoofError;
 use std::path::Path;
-
-use collect::collect_and_build_modules;
-use parse::Result;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -20,9 +19,9 @@ struct Args {
   input_dir: String,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), WoofError> {
   let config = Args::parse();
-  let modules = collect_and_build_modules(&config.input_dir)?;
+  let modules = collect::collect_and_build_modules(&config.input_dir)?;
 
   // We need to collect locale names from the module structure
   let locale_names = collect_locale_names(&modules);
@@ -33,6 +32,7 @@ fn main() -> Result<()> {
   Ok(())
 }
 
+// TODO: Do this while building modules
 /// Recursively collects all locale names from a module structure
 fn collect_locale_names(module: &parse::Module) -> Vec<parse::Locale> {
   let mut locales = std::collections::HashSet::new();
