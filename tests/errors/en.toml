@@ -16,10 +16,11 @@ special_chars = "Email {user@domain.com}"
 [interpolation_invalid_types]
 invalid_type = "Count: {count:invalid}"
 unknown_type = "Value: {value:custom}"
+bad_type = "Price: {amount:float}"
 
 [interpolation_unclosed]
 unclosed_simple = "Hello {name without closing"
-unclosed_with_type = "Count: {count:number without closing"
+unclosed_with_type = "Count: {amount:number without closing"
 
 [interpolation_type_mismatches]
 user_count = "You have {count:string} messages"
