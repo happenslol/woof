@@ -1,5 +1,6 @@
 use crate::errors::WoofError;
 use crate::parse::{Locale, Module, build_flat_module, build_namespaced_module};
+use crate::sanitize::is_valid_identifier;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -55,7 +56,7 @@ fn detect_file_mode(dir: &Path) -> Result<FileMode, WoofError> {
 }
 
 /// Collects locale files from a directory (flat mode)
-fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>, WoofError> {
+fn collect_flat<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>, WoofError> {
   let dir = dir.as_ref();
   let mut result = HashMap::new();
 
@@ -73,11 +74,6 @@ fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>
     let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
       continue;
     };
-
-    // Skip files with dots (namespaced files)
-    if stem.contains('.') {
-      continue;
-    }
 
     let contents = fs::read_to_string(&path)?;
     let locale = Locale(stem.to_string());
@@ -98,7 +94,7 @@ fn collect_flat_locales<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>
 }
 
 /// Collects namespaced files from a directory
-fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, WoofError> {
+fn collect_namespaced<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, WoofError> {
   let dir = dir.as_ref();
   let mut result = Vec::new();
 
@@ -119,8 +115,14 @@ fn collect_namespaced_files<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile
 
     // Parse namespace.locale format
     let parts: Vec<&str> = stem.split('.').collect();
-    if parts.len() != 2 {
-      return Err(WoofError::InvalidFileName(stem.to_string()));
+    if parts.len() != 2 || parts[0].is_empty() || !is_valid_identifier(parts[0]) {
+      return Err(WoofError::InvalidFileName(
+        path
+          .file_name()
+          .unwrap_or_default()
+          .to_string_lossy()
+          .to_string(),
+      ));
     }
 
     let namespace = parts[0].to_string();
@@ -153,11 +155,11 @@ pub fn collect_and_build_modules<P: AsRef<Path>>(dir: P) -> Result<Module, WoofE
 
   match mode {
     FileMode::Flat => {
-      let locales = collect_flat_locales(dir)?;
+      let locales = collect_flat(dir)?;
       build_flat_module(locales)
     }
     FileMode::Namespaced => {
-      let files = collect_namespaced_files(dir)?;
+      let files = collect_namespaced(dir)?;
 
       let mut namespaces = HashMap::new();
 

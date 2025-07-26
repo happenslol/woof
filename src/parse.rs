@@ -127,15 +127,14 @@ pub struct Module {
   pub modules: BTreeMap<Key, Module>,
 }
 
-/// Builds a module from namespaced files by creating a parent module with namespace modules as
-/// children
 pub fn build_namespaced_module(
   namespaces: HashMap<String, HashMap<Locale, Value>>,
 ) -> Result<Module, WoofError> {
-  let mut modules = std::collections::BTreeMap::new();
+  let mut modules = BTreeMap::new();
+  let mut diagnostics = Diagnostics::default();
 
   for (namespace, locales) in namespaces {
-    let module = build_flat_module(locales)?;
+    let module = build_root_module(locales, &mut diagnostics, vec![&namespace])?;
     let key = crate::parse::Key::new(&namespace);
     modules.insert(key, module);
   }
@@ -147,8 +146,17 @@ pub fn build_namespaced_module(
 }
 
 pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module, WoofError> {
-  let mut root_module = Module::default();
   let mut diagnostics = Diagnostics::default();
+  let root_module = build_root_module(locales, &mut diagnostics, vec![])?;
+  Ok(root_module)
+}
+
+fn build_root_module(
+  locales: HashMap<Locale, Value>,
+  diagnostics: &mut Diagnostics,
+  path: Vec<&str>,
+) -> Result<Module, WoofError> {
+  let mut root_module = Module::default();
 
   for (locale, value) in locales {
     let Value::Table(table) = value else {
@@ -157,11 +165,12 @@ pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module, Woof
 
     let mut ctx = Context {
       locale: &locale,
-      path: vec![],
+      path: path.clone(),
       messages: &mut root_module.messages,
       modules: &mut root_module.modules,
-      diagnostics: &mut diagnostics,
+      diagnostics,
     };
+
     build_module(&mut ctx, table)?;
   }
 

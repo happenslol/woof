@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::parse::{Locale, Translation};
+use crate::{
+  parse::{Locale, Translation},
+  sanitize::is_valid_identifier,
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct Interpolation {
@@ -62,11 +65,7 @@ pub enum InterpolationParseError {
   Empty {
     start: usize,
   },
-  InvalidStart {
-    start: usize,
-    end: usize,
-  },
-  InvalidCharacters {
+  InvalidIdentifier {
     start: usize,
     end: usize,
   },
@@ -115,12 +114,19 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
       if parsing_interpolation {
         // We're already parsing an interpolation and found another opening brace
         // This indicates nested braces, which is invalid
-        // TODO: Keep skipping until }
+
+        // Skip until we hit the next closing brace, so we can keep parsing
+        let mut offset = 0;
+        while chars.peek().is_some_and(|&(_, c)| c != '}') {
+          offset += 1;
+          chars.next();
+        }
+
         result
           .errors
-          .push(InterpolationParseError::InvalidCharacters {
+          .push(InterpolationParseError::InvalidIdentifier {
             start: start_byte_index,
-            end: start_byte_index + 1,
+            end: byte_index + offset,
           });
         continue;
       }
@@ -136,8 +142,11 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 
     if c == ':' {
       if let Err(err) = validate_interpolation_name(start_byte_index, &current_name) {
-        // TODO: Keeping skipping until we hit }, we want to keep parsing interpolations to catch
-        // all potential errors
+        // Skip until we hit the next closing brace, so we can keep parsing
+        while chars.peek().is_some_and(|&(_, c)| c != '}') {
+          chars.next();
+        }
+
         result.errors.push(err);
         parsing_interpolation = false;
         continue;
@@ -216,19 +225,8 @@ fn validate_interpolation_name(start: usize, name: &str) -> Result<(), Interpola
     return Err(InterpolationParseError::Empty { start });
   }
 
-  let mut chars = name.chars();
-
-  // First character must be a letter
-  if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
-    return Err(InterpolationParseError::InvalidStart {
-      start,
-      end: start + name.len(),
-    });
-  }
-
-  // Remaining characters must be alphanumeric or underscore
-  if !chars.all(|c| c.is_ascii_alphanumeric() || c == '_') {
-    return Err(InterpolationParseError::InvalidCharacters {
+  if !is_valid_identifier(name) {
+    return Err(InterpolationParseError::InvalidIdentifier {
       start,
       end: start + name.len(),
     });

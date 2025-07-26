@@ -193,6 +193,19 @@ pub fn escape_translation(s: &str) -> String {
   result
 }
 
+/// Checks whether a string matches `[a-zA-Z_][a-zA-Z0-9_]*`
+pub fn is_valid_identifier(s: &str) -> bool {
+  let mut chars = s.chars();
+
+  // First character must be a letter
+  if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
+    return false;
+  }
+
+  // Remaining characters must be alphanumeric or underscore
+  chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
