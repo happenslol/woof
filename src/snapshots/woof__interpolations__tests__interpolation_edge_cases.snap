@@ -6,17 +6,27 @@ expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            Empty {
-                start: 0,
-            },
+            Empty(
+                SourceSpan {
+                    offset: SourceOffset(
+                        0,
+                    ),
+                    length: 0,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            Empty {
-                start: 0,
-            },
+            Empty(
+                SourceSpan {
+                    offset: SourceOffset(
+                        0,
+                    ),
+                    length: 0,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
@@ -62,19 +72,27 @@ expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 0,
-                end: 11,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        1,
+                    ),
+                    length: 10,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 2,
-                end: 25,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        3,
+                    ),
+                    length: 23,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
@@ -84,17 +102,27 @@ expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            Unclosed {
-                start: 6,
-            },
+            Unclosed(
+                SourceSpan {
+                    offset: SourceOffset(
+                        7,
+                    ),
+                    length: 9,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            Unclosed {
-                start: 0,
-            },
+            Unclosed(
+                SourceSpan {
+                    offset: SourceOffset(
+                        1,
+                    ),
+                    length: 20,
+                },
+            ),
         ],
     },
 ]

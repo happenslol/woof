@@ -6,82 +6,118 @@ expression: "[parse(\"Number start {123name}\"), parse(\"Hyphen {user-name}\"),\
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 13,
-                end: 20,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        14,
+                    ),
+                    length: 7,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 7,
-                end: 16,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        8,
+                    ),
+                    length: 9,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 6,
-                end: 15,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        7,
+                    ),
+                    length: 9,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 4,
-                end: 13,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        5,
+                    ),
+                    length: 9,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 14,
-                end: 24,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        15,
+                    ),
+                    length: 10,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 17,
-                end: 22,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        18,
+                    ),
+                    length: 5,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 12,
-                end: 15,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        13,
+                    ),
+                    length: 3,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 14,
-                end: 18,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        15,
+                    ),
+                    length: 4,
+                },
+            ),
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidIdentifier {
-                start: 8,
-                end: 14,
-            },
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        9,
+                    ),
+                    length: 6,
+                },
+            ),
         ],
     },
 ]
