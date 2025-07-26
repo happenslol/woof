@@ -1,0 +1,114 @@
+---
+source: src/interpolations.rs
+expression: "[parse(\"Number start {123name}\"), parse(\"Hyphen {user-name}\"),\nparse(\"Space {user name}\"), parse(\"Dot {user.name}\"),\nparse(\"Special chars {user@email}\"), parse(\"Underscore start {_name}\"),\nparse(\"Number only {123}\"), parse(\"Special start {$var}\"),\nparse(\"Unicode {名前}\"),]"
+---
+[
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidStart {
+                start: 13,
+                end: 20,
+            },
+            Unclosed {
+                start: 13,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidCharacters {
+                start: 7,
+                end: 16,
+            },
+            Unclosed {
+                start: 7,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidCharacters {
+                start: 6,
+                end: 15,
+            },
+            Unclosed {
+                start: 6,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidCharacters {
+                start: 4,
+                end: 13,
+            },
+            Unclosed {
+                start: 4,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidCharacters {
+                start: 14,
+                end: 24,
+            },
+            Unclosed {
+                start: 14,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidStart {
+                start: 17,
+                end: 22,
+            },
+            Unclosed {
+                start: 17,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidStart {
+                start: 12,
+                end: 15,
+            },
+            Unclosed {
+                start: 12,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidStart {
+                start: 14,
+                end: 18,
+            },
+            Unclosed {
+                start: 14,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidStart {
+                start: 8,
+                end: 14,
+            },
+            Unclosed {
+                start: 8,
+            },
+        ],
+    },
+]

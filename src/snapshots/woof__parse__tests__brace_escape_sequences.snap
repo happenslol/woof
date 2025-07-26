@@ -3,62 +3,90 @@ source: src/parse.rs
 expression: "[parse(\"{{hello}}\"), parse(\"{name} and {{literal}}\"), parse(\"{{}} here\"),\nparse(\"{{start}} {name}\"), parse(\"{{first}} {{second}}\"),\nparse(\"{{text}} with {name:string} and {{more}}\"), parse(\"Just } here\"),\nparse(\"{{start\"), parse(\"{name} test\"), parse(\"{{{{\"),]"
 ---
 [
-    Ok(
-        [],
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "name",
-                None,
-                0,
-                5,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "name",
+                    start: 0,
+                    end: 5,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "name",
-                None,
-                10,
-                15,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "name",
+                    start: 10,
+                    end: 15,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "name",
-                String,
-                14,
-                26,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: String,
+                    name: "name",
+                    start: 14,
+                    end: 26,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        None,
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "name",
-                None,
-                0,
-                5,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "name",
+                    start: 0,
+                    end: 5,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
 ]

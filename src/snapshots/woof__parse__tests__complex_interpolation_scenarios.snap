@@ -3,84 +3,130 @@ source: src/parse.rs
 expression: "[parse(\"Mixed types: {name:string} has {count:number} items\"),\nparse(\"Long interpolation names: {veryLongInterpolationNameThatShouldStillWork:string}\"),\nparse(\"Multiple same type: {first:string} and {second:string} and {third:string}\"),\nparse(\"Interpolations with unicode text: 🎉 {celebration:string} 🎊 {party:number} 🥳\"),\nparse(\"Interpolations at boundaries: {start}middle text{end}\"),\nparse(\"Only interpolations: {a}{b}{c}{d}\"),]"
 ---
 [
-    Ok(
-        [
-            (
-                "name",
-                String,
-            ),
-            (
-                "count",
-                Number,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: String,
+                    name: "name",
+                    start: 13,
+                    end: 25,
+                },
+                ParsedInterpolation {
+                    type_: Number,
+                    name: "count",
+                    start: 31,
+                    end: 44,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "veryLongInterpolationNameThatShouldStillWork",
-                String,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: String,
+                    name: "veryLongInterpolationNameThatShouldStillWork",
+                    start: 26,
+                    end: 78,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "first",
-                String,
-            ),
-            (
-                "second",
-                String,
-            ),
-            (
-                "third",
-                String,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: String,
+                    name: "first",
+                    start: 20,
+                    end: 33,
+                },
+                ParsedInterpolation {
+                    type_: String,
+                    name: "second",
+                    start: 39,
+                    end: 53,
+                },
+                ParsedInterpolation {
+                    type_: String,
+                    name: "third",
+                    start: 59,
+                    end: 72,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "celebration",
-                String,
-            ),
-            (
-                "party",
-                Number,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: String,
+                    name: "celebration",
+                    start: 39,
+                    end: 58,
+                },
+                ParsedInterpolation {
+                    type_: Number,
+                    name: "party",
+                    start: 65,
+                    end: 78,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "start",
-                None,
-            ),
-            (
-                "end",
-                None,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "start",
+                    start: 30,
+                    end: 36,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "end",
+                    start: 48,
+                    end: 52,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            (
-                "a",
-                None,
-            ),
-            (
-                "b",
-                None,
-            ),
-            (
-                "c",
-                None,
-            ),
-            (
-                "d",
-                None,
-            ),
-        ],
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "a",
+                    start: 21,
+                    end: 23,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "b",
+                    start: 24,
+                    end: 26,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "c",
+                    start: 27,
+                    end: 29,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "d",
+                    start: 30,
+                    end: 32,
+                },
+            ],
+        ),
+        Diagnostics,
     ),
 ]

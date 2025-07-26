@@ -3,75 +3,88 @@ source: src/parse.rs
 expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\"{a}and{b}\"),\nparse(\"{outer{inner}}\"), parse(\"\\\\{invalid_interpolation\\\\}\"),\nparse(\"{{not_interpolation}}\"), parse(\"} and { separate\"),\nparse(\"{name without closing\"),]"
 ---
 [
-    Err(
-        InvalidInterpolationIdentifier(
-            "",
+    (
+        Some(
+            [],
         ),
+        Diagnostics,
     ),
-    Err(
-        InvalidInterpolationIdentifier(
-            "",
+    (
+        Some(
+            [],
         ),
+        Diagnostics,
     ),
-    Ok(
-        [
-            ParsedInterpolation {
-                type_: None,
-                name: "a",
-                start: 0,
-                end: 2,
-            },
-            ParsedInterpolation {
-                type_: None,
-                name: "b",
-                start: 3,
-                end: 5,
-            },
-            ParsedInterpolation {
-                type_: None,
-                name: "c",
-                start: 6,
-                end: 8,
-            },
-        ],
-    ),
-    Ok(
-        [
-            ParsedInterpolation {
-                type_: None,
-                name: "a",
-                start: 0,
-                end: 2,
-            },
-            ParsedInterpolation {
-                type_: None,
-                name: "b",
-                start: 6,
-                end: 8,
-            },
-        ],
-    ),
-    Err(
-        InvalidInterpolation(
-            "{outer{inner}}",
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "a",
+                    start: 0,
+                    end: 2,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "b",
+                    start: 3,
+                    end: 5,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "c",
+                    start: 6,
+                    end: 8,
+                },
+            ],
         ),
+        Diagnostics,
     ),
-    Err(
-        InvalidInterpolationIdentifier(
-            "invalid_interpolation\\\\",
+    (
+        Some(
+            [
+                ParsedInterpolation {
+                    type_: None,
+                    name: "a",
+                    start: 0,
+                    end: 2,
+                },
+                ParsedInterpolation {
+                    type_: None,
+                    name: "b",
+                    start: 6,
+                    end: 8,
+                },
+            ],
         ),
+        Diagnostics,
     ),
-    Ok(
-        [],
+    (
+        None,
+        Diagnostics,
     ),
-    Err(
-        InvalidInterpolation(
-            "} and { separate",
+    (
+        Some(
+            [],
         ),
+        Diagnostics,
     ),
-    Err(
-        InvalidInterpolation(
-            "{name without closing",
+    (
+        Some(
+            [],
         ),
+        Diagnostics,
+    ),
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
+    ),
+    (
+        Some(
+            [],
+        ),
+        Diagnostics,
     ),
 ]

@@ -1,0 +1,113 @@
+---
+source: src/interpolations.rs
+expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\"{a}and{b}\"),\nparse(\"{outer{inner}}\"), parse(\"\\\\{invalid_interpolation\\\\}\"),\nparse(\"{{not_interpolation}}\"), parse(\"} and { separate\"),\nparse(\"{name without closing\"),]"
+---
+[
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Empty {
+                start: 0,
+            },
+            Unclosed {
+                start: 0,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Empty {
+                start: 0,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "a",
+                start: 0,
+                end: 2,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "b",
+                start: 3,
+                end: 5,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "c",
+                start: 6,
+                end: 8,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "a",
+                start: 0,
+                end: 2,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "b",
+                start: 6,
+                end: 8,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "outerinner",
+                start: 0,
+                end: 12,
+            },
+        ],
+        errors: [
+            InvalidCharacters {
+                start: 0,
+                end: 1,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidCharacters {
+                start: 2,
+                end: 25,
+            },
+            Unclosed {
+                start: 2,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Unclosed {
+                start: 6,
+            },
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Unclosed {
+                start: 0,
+            },
+        ],
+    },
+]

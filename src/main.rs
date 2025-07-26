@@ -1,6 +1,8 @@
 mod collect;
+mod context;
 mod errors;
 mod generate;
+mod interpolations;
 mod parse;
 mod sanitize;
 
