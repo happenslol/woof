@@ -53,6 +53,7 @@ impl Context<'_> {
   pub fn add_interpolation_parse_errors(
     &mut self,
     key: &str,
+    translation: &str,
     errors: Vec<InterpolationParseError>,
   ) {
     self
@@ -60,6 +61,7 @@ impl Context<'_> {
       .interpolation_errors
       .push(InterpolationError {
         locale: self.locale.clone(),
+        translation: translation.to_string(),
         path: self.path_at(key),
         errors,
       });
@@ -87,6 +89,7 @@ pub struct UnsupportedValueType {
 pub struct InterpolationError {
   locale: Locale,
   path: String,
+  translation: String,
   errors: Vec<InterpolationParseError>,
 }
 

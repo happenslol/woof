@@ -184,7 +184,7 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
         let translation = Translation::new(&s);
         let interpolations = parse_interpolations(&translation);
         if !interpolations.errors.is_empty() {
-          ctx.add_interpolation_parse_errors(&key, interpolations.errors);
+          ctx.add_interpolation_parse_errors(&key, &s, interpolations.errors);
         }
 
         let message = ctx.messages.entry(Key::new(&key)).or_default();
