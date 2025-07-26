@@ -23,7 +23,9 @@ struct Args {
 
 fn main() -> Result<(), WoofError> {
   let config = Args::parse();
-  let modules = collect::collect_and_build_modules(&config.input_dir)?;
+  let (modules, diagnostics) = collect::collect_and_build_modules(&config.input_dir)?;
+
+  println!("{:#?}", diagnostics);
 
   // We need to collect locale names from the module structure
   let locale_names = collect_locale_names(&modules);

@@ -149,6 +149,7 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 
         result.errors.push(err);
         parsing_interpolation = false;
+        current_name.clear();
         continue;
       };
 
@@ -168,6 +169,8 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
               type_: current_type.clone(),
             });
 
+            parsing_interpolation = false;
+            parsing_type = false;
             current_type.clear();
             continue;
           }
@@ -180,6 +183,9 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
         match validate_interpolation_name(start_byte_index, &current_name) {
           Ok(_) => InterpolationType::None,
           Err(err) => {
+            parsing_interpolation = false;
+            parsing_type = false;
+            current_name.clear();
             result.errors.push(err);
             continue;
           }

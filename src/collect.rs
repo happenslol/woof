@@ -1,3 +1,4 @@
+use crate::context::Diagnostics;
 use crate::errors::WoofError;
 use crate::parse::{Locale, Module, build_flat_module, build_namespaced_module};
 use crate::sanitize::is_valid_identifier;
@@ -149,7 +150,9 @@ fn collect_namespaced<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, Woo
 }
 
 /// Collects and builds modules from translation files, supporting both flat and namespaced modes
-pub fn collect_and_build_modules<P: AsRef<Path>>(dir: P) -> Result<Module, WoofError> {
+pub fn collect_and_build_modules<P: AsRef<Path>>(
+  dir: P,
+) -> Result<(Module, Diagnostics), WoofError> {
   let dir = dir.as_ref();
   let mode = detect_file_mode(dir)?;
 

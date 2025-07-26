@@ -129,26 +129,25 @@ pub struct Module {
 
 pub fn build_namespaced_module(
   namespaces: HashMap<String, HashMap<Locale, Value>>,
-) -> Result<Module, WoofError> {
-  let mut modules = BTreeMap::new();
+) -> Result<(Module, Diagnostics), WoofError> {
+  let mut root_module = Module::default();
   let mut diagnostics = Diagnostics::default();
 
   for (namespace, locales) in namespaces {
     let module = build_root_module(locales, &mut diagnostics, vec![&namespace])?;
     let key = crate::parse::Key::new(&namespace);
-    modules.insert(key, module);
+    root_module.modules.insert(key, module);
   }
 
-  Ok(Module {
-    messages: std::collections::BTreeMap::new(),
-    modules,
-  })
+  Ok((root_module, diagnostics))
 }
 
-pub fn build_flat_module(locales: HashMap<Locale, Value>) -> Result<Module, WoofError> {
+pub fn build_flat_module(
+  locales: HashMap<Locale, Value>,
+) -> Result<(Module, Diagnostics), WoofError> {
   let mut diagnostics = Diagnostics::default();
   let root_module = build_root_module(locales, &mut diagnostics, vec![])?;
-  Ok(root_module)
+  Ok((root_module, diagnostics))
 }
 
 fn build_root_module(
