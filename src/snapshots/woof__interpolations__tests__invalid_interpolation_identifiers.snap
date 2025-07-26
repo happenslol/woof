@@ -6,108 +6,81 @@ expression: "[parse(\"Number start {123name}\"), parse(\"Hyphen {user-name}\"),\
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidStart {
+            InvalidIdentifier {
                 start: 13,
                 end: 20,
             },
-            Unclosed {
-                start: 13,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidCharacters {
+            InvalidIdentifier {
                 start: 7,
                 end: 16,
             },
-            Unclosed {
-                start: 7,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidCharacters {
+            InvalidIdentifier {
                 start: 6,
                 end: 15,
             },
-            Unclosed {
-                start: 6,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidCharacters {
+            InvalidIdentifier {
                 start: 4,
                 end: 13,
             },
-            Unclosed {
-                start: 4,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidCharacters {
+            InvalidIdentifier {
                 start: 14,
                 end: 24,
             },
-            Unclosed {
-                start: 14,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidStart {
+            InvalidIdentifier {
                 start: 17,
                 end: 22,
             },
-            Unclosed {
-                start: 17,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidStart {
+            InvalidIdentifier {
                 start: 12,
                 end: 15,
             },
-            Unclosed {
-                start: 12,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidStart {
+            InvalidIdentifier {
                 start: 14,
                 end: 18,
             },
-            Unclosed {
-                start: 14,
-            },
         ],
     },
     ParsedInterpolations {
         interpolations: [],
         errors: [
-            InvalidStart {
+            InvalidIdentifier {
                 start: 8,
                 end: 14,
-            },
-            Unclosed {
-                start: 8,
             },
         ],
     },

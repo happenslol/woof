@@ -122,6 +122,10 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
           chars.next();
         }
 
+        parsing_interpolation = false;
+        parsing_type = false;
+        current_name.clear();
+
         result
           .errors
           .push(InterpolationParseError::InvalidIdentifier {
