@@ -242,6 +242,31 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
 mod tests {
   use super::*;
 
+  fn template(input: &str) -> String {
+    let translation = Translation::new(input);
+    let mut message = Message::default();
+    let locale = Locale("en".to_string());
+
+    let interpolations = parse_interpolations(&translation);
+    message.translation.insert(locale.clone(), translation);
+
+    // Add all found interpolations
+    for interp in interpolations.interpolations {
+      let mut interpolation_obj = Interpolation {
+        type_: interp.type_,
+        ..Default::default()
+      };
+      interpolation_obj
+        .ranges
+        .insert(locale.clone(), (interp.start, interp.end));
+      message
+        .interpolations
+        .insert(Key::new(&interp.name), interpolation_obj);
+    }
+
+    message.template_for_locale(&locale).unwrap()
+  }
+
   #[test]
   fn template_for_locale_basic() {
     let mut message = Message::default();
@@ -270,38 +295,13 @@ mod tests {
 
   #[test]
   fn multibyte_characters_with_interpolation() {
-    let test_interpolation = |input: &str| {
-      let translation = Translation::new(input);
-      let mut message = Message::default();
-      let locale = Locale("en".to_string());
-
-      let interpolations = parse_interpolations(&translation);
-      message.translation.insert(locale.clone(), translation);
-
-      // Add all found interpolations
-      for interp in interpolations.interpolations {
-        let mut interpolation_obj = Interpolation {
-          type_: interp.type_,
-          ..Default::default()
-        };
-        interpolation_obj
-          .ranges
-          .insert(locale.clone(), (interp.start, interp.end));
-        message
-          .interpolations
-          .insert(Key::new(&interp.name), interpolation_obj);
-      }
-
-      message.template_for_locale(&locale).unwrap()
-    };
-
     insta::assert_debug_snapshot!([
-      test_interpolation("Hello 🌍 world! Welcome {name}!"),
-      test_interpolation("Café {name}"),
-      test_interpolation("中文 {count:number} 测试"),
-      test_interpolation("🚀🌟✨ {msg} 🎉"),
-      test_interpolation("Ñiño {age:number} años"),
-      test_interpolation("👨‍👩‍👧‍👦 family {size:number}"),
+      template("Hello 🌍 world! Welcome {name}!"),
+      template("Café {name}"),
+      template("中文 {count:number} 测试"),
+      template("🚀🌟✨ {msg} 🎉"),
+      template("Ñiño {age:number} años"),
+      template("👨‍👩‍👧‍👦 family {size:number}"),
     ]);
   }
 
@@ -393,79 +393,25 @@ mod tests {
 
   #[test]
   fn template_generation_edge_cases() {
-    let generate = |input: &str| {
-      let mut message = Message::default();
-      let locale = Locale("en".to_string());
-
-      let translation = Translation::new(input);
-      let interpolations = parse_interpolations(&translation);
-      assert!(interpolations.errors.is_empty());
-
-      message.translation.insert(locale.clone(), translation);
-
-      // Add all found interpolations
-      for interp in interpolations.interpolations {
-        let mut interpolation_obj = Interpolation {
-          type_: interp.type_,
-          ..Default::default()
-        };
-        interpolation_obj
-          .ranges
-          .insert(locale.clone(), (interp.start, interp.end));
-        message
-          .interpolations
-          .insert(Key::new(&interp.name), interpolation_obj);
-      }
-
-      message.template_for_locale(&locale)
-    };
-
     insta::assert_debug_snapshot!([
-      generate(""),
-      generate("No interpolations here"),
-      generate("{single}"),
-      generate("Only text no braces"),
-      generate("Start {a} middle {b} end"),
-      generate("{a}{b}{c}"),
-      generate("Unicode 🌍 {name} more unicode 🎉"),
+      template(""),
+      template("No interpolations here"),
+      template("{single}"),
+      template("Only text no braces"),
+      template("Start {a} middle {b} end"),
+      template("{a}{b}{c}"),
+      template("Unicode 🌍 {name} more unicode 🎉"),
     ]);
   }
 
   #[test]
   fn brace_escapes_in_template_generation() {
-    let generate = |input: &str| {
-      let mut message = Message::default();
-      let locale = Locale("en".to_string());
-
-      let translation = Translation::new(input);
-      let interpolations = parse_interpolations(&translation);
-      assert!(interpolations.errors.is_empty());
-
-      message.translation.insert(locale.clone(), translation);
-
-      // Add all found interpolations
-      for interp in interpolations.interpolations {
-        let mut interpolation_obj = Interpolation {
-          type_: interp.type_,
-          ..Default::default()
-        };
-        interpolation_obj
-          .ranges
-          .insert(locale.clone(), (interp.start, interp.end));
-        message
-          .interpolations
-          .insert(Key::new(&interp.name), interpolation_obj);
-      }
-
-      message.template_for_locale(&locale)
-    };
-
     insta::assert_debug_snapshot!([
-      generate("Welcome {{user} and {name}"),
-      generate("Price: ${{amount} for {item}"),
-      generate("Braces: {{} and {count:number}"),
-      generate("Start {{literal} middle {var} end {{more}"),
-      generate("Escape only {{starting double braces}}"),
+      template("Welcome {{user} and {name}"),
+      template("Price: ${{amount} for {item}"),
+      template("Braces: {{} and {count:number}"),
+      template("Start {{literal} middle {var} end {{more}"),
+      template("Escape only {{starting double braces}}"),
     ]);
   }
 }
