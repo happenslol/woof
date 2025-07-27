@@ -178,6 +178,7 @@ pub fn collect_and_build_modules(dir: &str) -> Result<ModuleBuildResult, WoofErr
       }
 
       let (module, diagnostics) = build_namespaced_module(namespaces)?;
+
       Ok(ModuleBuildResult {
         module,
         diagnostics,
