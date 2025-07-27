@@ -143,10 +143,10 @@ pub fn build_namespaced_module(
 }
 
 pub fn build_flat_module(
-  locales: HashMap<Locale, Value>,
+  files: HashMap<Locale, Value>,
 ) -> Result<(Module, Diagnostics), WoofError> {
   let mut diagnostics = Diagnostics::default();
-  let root_module = build_root_module(locales, &mut diagnostics, vec![])?;
+  let root_module = build_root_module(files, &mut diagnostics, vec![])?;
   Ok((root_module, diagnostics))
 }
 

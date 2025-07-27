@@ -16,7 +16,6 @@ pub enum FileMode {
 #[derive(Debug)]
 pub struct NamespacedFile {
   pub namespace: String,
-  pub locale: Locale,
   pub content: Value,
 }
 
@@ -94,8 +93,8 @@ fn collect_flat(dir: &Path) -> Result<HashMap<Locale, Value>, WoofError> {
 }
 
 /// Collects namespaced files from a directory
-fn collect_namespaced(dir: &Path) -> Result<Vec<NamespacedFile>, WoofError> {
-  let mut result = Vec::new();
+fn collect_namespaced(dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, WoofError> {
+  let mut result = HashMap::new();
 
   if !dir.is_dir() {
     return Err(WoofError::InvalidInputDirectory(dir.display().to_string()));
@@ -137,44 +136,53 @@ fn collect_namespaced(dir: &Path) -> Result<Vec<NamespacedFile>, WoofError> {
       WoofError::Toml(filename, err)
     })?;
 
-    result.push(NamespacedFile {
-      namespace,
-      locale,
-      content,
-    });
+    result.insert(locale, NamespacedFile { namespace, content });
   }
 
   Ok(result)
 }
 
+pub struct ModuleBuildResult {
+  pub module: Module,
+  pub diagnostics: Diagnostics,
+  pub locales: Vec<Locale>,
+}
+
 /// Collects and builds modules from translation files, supporting both flat and namespaced modes
-pub fn collect_and_build_modules(
-  dir: &str,
-) -> Result<(Module, Diagnostics, Vec<Locale>), WoofError> {
+pub fn collect_and_build_modules(dir: &str) -> Result<ModuleBuildResult, WoofError> {
   let dir = Path::new(dir);
   let mode = detect_file_mode(dir)?;
 
   match mode {
     FileMode::Flat => {
-      let locales = collect_flat(dir)?;
-      let locale_keys = locales.keys().cloned().collect::<Vec<_>>();
-      let (module, diagnostics) = build_flat_module(locales)?;
-      Ok((module, diagnostics, locale_keys))
+      let files = collect_flat(dir)?;
+      let locales = files.keys().cloned().collect::<Vec<_>>();
+      let (module, diagnostics) = build_flat_module(files)?;
+
+      Ok(ModuleBuildResult {
+        module,
+        diagnostics,
+        locales,
+      })
     }
     FileMode::Namespaced => {
       let files = collect_namespaced(dir)?;
-      let locale_keys = files.iter().map(|f| f.locale.clone()).collect::<Vec<_>>();
+      let locales = files.keys().cloned().collect::<Vec<_>>();
       let mut namespaces = HashMap::new();
 
-      for file in files {
+      for (locale, file) in files {
         namespaces
           .entry(file.namespace)
           .or_insert_with(HashMap::new)
-          .insert(file.locale, file.content);
+          .insert(locale, file.content);
       }
 
       let (module, diagnostics) = build_namespaced_module(namespaces)?;
-      Ok((module, diagnostics, locale_keys))
+      Ok(ModuleBuildResult {
+        module,
+        diagnostics,
+        locales,
+      })
     }
   }
 }
