@@ -57,8 +57,7 @@ fn detect_file_mode(dir: &Path) -> Result<FileMode, WoofError> {
 }
 
 /// Collects locale files from a directory (flat mode)
-fn collect_flat<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>, WoofError> {
-  let dir = dir.as_ref();
+fn collect_flat(dir: &Path) -> Result<HashMap<Locale, Value>, WoofError> {
   let mut result = HashMap::new();
 
   if !dir.is_dir() {
@@ -95,8 +94,7 @@ fn collect_flat<P: AsRef<Path>>(dir: P) -> Result<HashMap<Locale, Value>, WoofEr
 }
 
 /// Collects namespaced files from a directory
-fn collect_namespaced<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, WoofError> {
-  let dir = dir.as_ref();
+fn collect_namespaced(dir: &Path) -> Result<Vec<NamespacedFile>, WoofError> {
   let mut result = Vec::new();
 
   if !dir.is_dir() {
@@ -150,20 +148,22 @@ fn collect_namespaced<P: AsRef<Path>>(dir: P) -> Result<Vec<NamespacedFile>, Woo
 }
 
 /// Collects and builds modules from translation files, supporting both flat and namespaced modes
-pub fn collect_and_build_modules<P: AsRef<Path>>(
-  dir: P,
-) -> Result<(Module, Diagnostics), WoofError> {
-  let dir = dir.as_ref();
+pub fn collect_and_build_modules(
+  dir: &str,
+) -> Result<(Module, Diagnostics, Vec<Locale>), WoofError> {
+  let dir = Path::new(dir);
   let mode = detect_file_mode(dir)?;
 
   match mode {
     FileMode::Flat => {
       let locales = collect_flat(dir)?;
-      build_flat_module(locales)
+      let locale_keys = locales.keys().cloned().collect::<Vec<_>>();
+      let (module, diagnostics) = build_flat_module(locales)?;
+      Ok((module, diagnostics, locale_keys))
     }
     FileMode::Namespaced => {
       let files = collect_namespaced(dir)?;
-
+      let locale_keys = files.iter().map(|f| f.locale.clone()).collect::<Vec<_>>();
       let mut namespaces = HashMap::new();
 
       for file in files {
@@ -173,7 +173,8 @@ pub fn collect_and_build_modules<P: AsRef<Path>>(
           .insert(file.locale, file.content);
       }
 
-      build_namespaced_module(namespaces)
+      let (module, diagnostics) = build_namespaced_module(namespaces)?;
+      Ok((module, diagnostics, locale_keys))
     }
   }
 }

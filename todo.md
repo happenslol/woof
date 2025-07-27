@@ -11,7 +11,7 @@
 
 - [x] Collect errors instead of aborting parsing
 - [ ] Detect missing translations
-- [x] Report spanned errors using ariadne/miette
+- [x] Report spanned errors using miette
 
 ## Build
 
