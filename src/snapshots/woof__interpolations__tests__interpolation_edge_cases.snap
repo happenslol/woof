@@ -1,0 +1,128 @@
+---
+source: src/interpolations.rs
+expression: "[parse(\"{}\"), parse(\"{:string}\"), parse(\"{a}{b}{c}\"), parse(\"{a}and{b}\"),\nparse(\"{outer{inner}}\"), parse(\"\\\\{invalid_interpolation\\\\}\"),\nparse(\"{{not_interpolation}}\"), parse(\"} and { separate\"),\nparse(\"{name without closing\"),]"
+---
+[
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Empty(
+                SourceSpan {
+                    offset: SourceOffset(
+                        0,
+                    ),
+                    length: 0,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Empty(
+                SourceSpan {
+                    offset: SourceOffset(
+                        0,
+                    ),
+                    length: 0,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "a",
+                start: 0,
+                end: 2,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "b",
+                start: 3,
+                end: 5,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "c",
+                start: 6,
+                end: 8,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "a",
+                start: 0,
+                end: 2,
+            },
+            ParsedInterpolation {
+                type_: None,
+                name: "b",
+                start: 6,
+                end: 8,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        1,
+                    ),
+                    length: 10,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        3,
+                    ),
+                    length: 23,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Unclosed(
+                SourceSpan {
+                    offset: SourceOffset(
+                        7,
+                    ),
+                    length: 9,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            Unclosed(
+                SourceSpan {
+                    offset: SourceOffset(
+                        1,
+                    ),
+                    length: 20,
+                },
+            ),
+        ],
+    },
+]

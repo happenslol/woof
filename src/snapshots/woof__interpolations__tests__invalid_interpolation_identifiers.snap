@@ -1,0 +1,123 @@
+---
+source: src/interpolations.rs
+expression: "[parse(\"Number start {123name}\"), parse(\"Hyphen {user-name}\"),\nparse(\"Space {user name}\"), parse(\"Dot {user.name}\"),\nparse(\"Special chars {user@email}\"), parse(\"Underscore start {_name}\"),\nparse(\"Number only {123}\"), parse(\"Special start {$var}\"),\nparse(\"Unicode {名前}\"),]"
+---
+[
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        14,
+                    ),
+                    length: 7,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        8,
+                    ),
+                    length: 9,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        7,
+                    ),
+                    length: 9,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        5,
+                    ),
+                    length: 9,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        15,
+                    ),
+                    length: 10,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        18,
+                    ),
+                    length: 5,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        13,
+                    ),
+                    length: 3,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        15,
+                    ),
+                    length: 4,
+                },
+            ),
+        ],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [
+            InvalidIdentifier(
+                SourceSpan {
+                    offset: SourceOffset(
+                        9,
+                    ),
+                    length: 6,
+                },
+            ),
+        ],
+    },
+]

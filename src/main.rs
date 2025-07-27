@@ -1,13 +1,14 @@
 mod collect;
+mod context;
+mod errors;
 mod generate;
+mod interpolations;
 mod parse;
 mod sanitize;
 
 use clap::Parser;
+use errors::WoofError;
 use std::path::Path;
-
-use collect::collect_and_build_modules;
-use parse::Result;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -20,39 +21,13 @@ struct Args {
   input_dir: String,
 }
 
-fn main() -> Result<()> {
-  let config = Args::parse();
-  let modules = collect_and_build_modules(&config.input_dir)?;
+fn main() -> Result<(), WoofError> {
+  let args = Args::parse();
+  let result = collect::collect_and_build_modules(&args.input_dir)?;
+  result.diagnostics.report();
 
-  // We need to collect locale names from the module structure
-  let locale_names = collect_locale_names(&modules);
-
-  let out = Path::new(&config.out);
-  generate::generate(out, locale_names.as_slice(), &modules)?;
+  let out = Path::new(&args.out);
+  generate::generate(out, &result.locales, &result.module)?;
 
   Ok(())
-}
-
-/// Recursively collects all locale names from a module structure
-fn collect_locale_names(module: &parse::Module) -> Vec<parse::Locale> {
-  let mut locales = std::collections::HashSet::new();
-  collect_locale_names_recursive(module, &mut locales);
-  locales.into_iter().collect()
-}
-
-fn collect_locale_names_recursive(
-  module: &parse::Module,
-  locales: &mut std::collections::HashSet<parse::Locale>,
-) {
-  // Collect locales from messages
-  for message in module.messages.values() {
-    for locale in message.translation.keys() {
-      locales.insert(locale.clone());
-    }
-  }
-
-  // Recursively collect from submodules
-  for submodule in module.modules.values() {
-    collect_locale_names_recursive(submodule, locales);
-  }
 }

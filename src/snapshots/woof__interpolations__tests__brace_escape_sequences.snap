@@ -1,0 +1,74 @@
+---
+source: src/interpolations.rs
+expression: "[parse(\"{{hello}}\"), parse(\"{name} and {{literal}}\"), parse(\"{{}} here\"),\nparse(\"{{start}} {name}\"), parse(\"{{first}} {{second}}\"),\nparse(\"{{text}} with {name:string} and {{more}}\"), parse(\"Just } here\"),\nparse(\"{{start\"), parse(\"{name} test\"), parse(\"{{{{\"),]"
+---
+[
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "name",
+                start: 0,
+                end: 5,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "name",
+                start: 10,
+                end: 15,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: String,
+                name: "name",
+                start: 14,
+                end: 26,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [
+            ParsedInterpolation {
+                type_: None,
+                name: "name",
+                start: 0,
+                end: 5,
+            },
+        ],
+        errors: [],
+    },
+    ParsedInterpolations {
+        interpolations: [],
+        errors: [],
+    },
+]

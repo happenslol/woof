@@ -1,0 +1,29 @@
+interpolation_empty = "Hello {} world"
+
+interpolation_invalid_identifiers = """
+User {123name} logged in
+Welcome {user-name}!
+Hello {user name}
+Value {_count}
+Email {user@domain.com}
+"""
+
+interpolation_invalid_types = "Count: {count:invalid}, value: {value:float}"
+
+[unsupported_values]
+feature_enabled = true
+max_items = 100
+tags = ["red", "blue", "green"]
+
+[interpolation_unclosed]
+unclosed_simple = "Hello {name without closing"
+unclosed_with_type = "Count: {amount:number without closing"
+
+[interpolation_type_mismatches]
+user_count = "You have {count:string} messages"
+item_total = "Total items: {count:number}"
+
+[valid_messages]
+valid_message = "This is a valid message"
+valid_interpolation = "Hello {name}!"
+valid_typed = "Count: {count:number}"

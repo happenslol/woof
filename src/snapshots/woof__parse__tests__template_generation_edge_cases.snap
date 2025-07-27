@@ -1,27 +1,13 @@
 ---
 source: src/parse.rs
-expression: "[generate(\"\"), generate(\"No interpolations here\"), generate(\"{single}\"),\ngenerate(\"Only text no braces\"), generate(\"Start {a} middle {b} end\"),\ngenerate(\"{a}{b}{c}\"), generate(\"Unicode 🌍 {name} more unicode 🎉\"),]"
+expression: "[template(\"\"), template(\"No interpolations here\"), template(\"{single}\"),\ntemplate(\"Only text no braces\"), template(\"Start {a} middle {b} end\"),\ntemplate(\"{a}{b}{c}\"), template(\"Unicode 🌍 {name} more unicode 🎉\"),]"
 ---
 [
-    Some(
-        "",
-    ),
-    Some(
-        "No interpolations here",
-    ),
-    Some(
-        "${args.single}",
-    ),
-    Some(
-        "Only text no braces",
-    ),
-    Some(
-        "Start ${args.a} middle ${args.b} end",
-    ),
-    Some(
-        "${args.a}${args.b}${args.c}",
-    ),
-    Some(
-        "Unicode 🌍 ${args.name} more unicode 🎉",
-    ),
+    "",
+    "No interpolations here",
+    "${args.single}",
+    "Only text no braces",
+    "Start ${args.a} middle ${args.b} end",
+    "${args.a}${args.b}${args.c}",
+    "Unicode 🌍 ${args.name} more unicode 🎉",
 ]

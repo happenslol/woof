@@ -1,0 +1,8 @@
+[interpolation_type_mismatches]
+user_count = "Tienes {count:number} mensajes"
+item_total = "Total de elementos: {count:number}"
+
+[valid_messages]
+valid_message = "Este es un mensaje válido"
+valid_interpolation = "¡Hola {name}!"
+valid_typed = "Cuenta: {count:number}"
