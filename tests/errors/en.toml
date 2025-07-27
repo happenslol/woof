@@ -1,22 +1,19 @@
+interpolation_empty = "Hello {} world"
+
+interpolation_invalid_identifiers = """
+User {123name} logged in
+Welcome {user-name}!
+Hello {user name}
+Value {_count}
+Email {user@domain.com}
+"""
+
+interpolation_invalid_types = "Count: {count:invalid}, value: {value:float}"
+
 [unsupported_values]
 feature_enabled = true
 max_items = 100
 tags = ["red", "blue", "green"]
-
-[interpolation_empty]
-empty_interpolation = "Hello {} world"
-
-[interpolation_invalid_identifiers]
-number_start = "User {123name} logged in"
-hyphen_name = "Welcome {user-name}!"
-space_name = "Hello {user name}"
-underscore_start = "Value {_count}"
-special_chars = "Email {user@domain.com}"
-
-[interpolation_invalid_types]
-invalid_type = "Count: {count:invalid}"
-unknown_type = "Value: {value:custom}"
-bad_type = "Price: {amount:float}"
 
 [interpolation_unclosed]
 unclosed_simple = "Hello {name without closing"

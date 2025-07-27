@@ -3,8 +3,8 @@ use crate::errors::WoofError;
 use crate::parse::{Locale, Module, build_flat_module, build_namespaced_module};
 use crate::sanitize::is_valid_identifier;
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
+use std::{env, fs};
 use toml::Value;
 
 #[derive(Debug, PartialEq)]
@@ -14,9 +14,17 @@ pub enum FileMode {
 }
 
 #[derive(Debug)]
+pub struct ParsedFile {
+  /// The path of the file, either relative to the current working directory or (if outside of it)
+  /// relative to the input directory
+  pub normalized_path: String,
+  pub contents: Value,
+}
+
+#[derive(Debug)]
 pub struct NamespacedFile {
   pub namespace: String,
-  pub content: Value,
+  pub file: ParsedFile,
 }
 
 /// Determines the file mode by examining the files in the directory
@@ -56,14 +64,17 @@ fn detect_file_mode(dir: &Path) -> Result<FileMode, WoofError> {
 }
 
 /// Collects locale files from a directory (flat mode)
-fn collect_flat(dir: &Path) -> Result<HashMap<Locale, Value>, WoofError> {
+fn collect_flat(input_dir: &Path) -> Result<HashMap<Locale, ParsedFile>, WoofError> {
+  let cwd = env::current_dir().map_err(WoofError::InvalidCwd)?;
   let mut result = HashMap::new();
 
-  if !dir.is_dir() {
-    return Err(WoofError::InvalidInputDirectory(dir.display().to_string()));
+  if !input_dir.is_dir() {
+    return Err(WoofError::InvalidInputDirectory(
+      input_dir.display().to_string(),
+    ));
   }
 
-  let entries = fs::read_dir(dir)?;
+  let entries = fs::read_dir(input_dir)?;
   let toml_files = entries
     .filter_map(|e| e.ok())
     .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("toml"));
@@ -71,12 +82,15 @@ fn collect_flat(dir: &Path) -> Result<HashMap<Locale, Value>, WoofError> {
   for entry in toml_files {
     let path = entry.path();
     let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+      // TODO: Log this
       continue;
     };
 
-    let contents = fs::read_to_string(&path)?;
+    let normalized_path = normalize_path(&path, &cwd, input_dir);
+
     let locale = Locale(stem.to_string());
-    let parsed = toml::from_str(&contents).map_err(|err| {
+    let contents = fs::read_to_string(&path)?;
+    let contents = toml::from_str(&contents).map_err(|err| {
       let filename = path
         .file_name()
         .map(|s| s.to_string_lossy())
@@ -86,21 +100,29 @@ fn collect_flat(dir: &Path) -> Result<HashMap<Locale, Value>, WoofError> {
       WoofError::Toml(filename, err)
     })?;
 
-    result.insert(locale, parsed);
+    let file = ParsedFile {
+      normalized_path,
+      contents,
+    };
+
+    result.insert(locale, file);
   }
 
   Ok(result)
 }
 
 /// Collects namespaced files from a directory
-fn collect_namespaced(dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, WoofError> {
+fn collect_namespaced(input_dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, WoofError> {
+  let cwd = env::current_dir().map_err(WoofError::InvalidCwd)?;
   let mut result = HashMap::new();
 
-  if !dir.is_dir() {
-    return Err(WoofError::InvalidInputDirectory(dir.display().to_string()));
+  if !input_dir.is_dir() {
+    return Err(WoofError::InvalidInputDirectory(
+      input_dir.display().to_string(),
+    ));
   }
 
-  let entries = fs::read_dir(dir)?;
+  let entries = fs::read_dir(input_dir)?;
   let toml_files = entries
     .filter_map(|e| e.ok())
     .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("toml"));
@@ -108,8 +130,11 @@ fn collect_namespaced(dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, Woo
   for entry in toml_files {
     let path = entry.path();
     let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+      // TODO: Log this
       continue;
     };
+
+    let normalized_path = normalize_path(&path, &cwd, input_dir);
 
     // Parse namespace.locale format
     let parts: Vec<&str> = stem.split('.').collect();
@@ -127,7 +152,7 @@ fn collect_namespaced(dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, Woo
     let locale = Locale(parts[1].to_string());
 
     let contents = fs::read_to_string(&path)?;
-    let content: Value = toml::from_str(&contents).map_err(|err| {
+    let contents: Value = toml::from_str(&contents).map_err(|err| {
       let filename = path
         .file_name()
         .map(|s| s.to_string_lossy())
@@ -136,7 +161,12 @@ fn collect_namespaced(dir: &Path) -> Result<HashMap<Locale, NamespacedFile>, Woo
       WoofError::Toml(filename, err)
     })?;
 
-    result.insert(locale, NamespacedFile { namespace, content });
+    let file = ParsedFile {
+      normalized_path,
+      contents,
+    };
+
+    result.insert(locale, NamespacedFile { namespace, file });
   }
 
   Ok(result)
@@ -174,7 +204,7 @@ pub fn collect_and_build_modules(dir: &str) -> Result<ModuleBuildResult, WoofErr
         namespaces
           .entry(file.namespace)
           .or_insert_with(HashMap::new)
-          .insert(locale, file.content);
+          .insert(locale, file.file);
       }
 
       let (module, diagnostics) = build_namespaced_module(namespaces)?;
@@ -186,4 +216,16 @@ pub fn collect_and_build_modules(dir: &str) -> Result<ModuleBuildResult, WoofErr
       })
     }
   }
+}
+
+fn normalize_path(path: &Path, cwd: &Path, input_dir: &Path) -> String {
+  if let Ok(path) = path.strip_prefix(cwd) {
+    return path.display().to_string();
+  }
+
+  if let Ok(path) = path.strip_prefix(input_dir) {
+    return path.display().to_string();
+  }
+
+  path.display().to_string()
 }

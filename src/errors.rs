@@ -19,4 +19,7 @@ pub enum WoofError {
 
   #[error("File exists at output path {0}")]
   OutputFileExists(String),
+
+  #[error("Invalid current working directory: {0}")]
+  InvalidCwd(std::io::Error),
 }

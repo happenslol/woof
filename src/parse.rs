@@ -1,5 +1,6 @@
 use crate::{
-  context::{Context, Diagnostics},
+  collect::ParsedFile,
+  context::{Context, Diagnostics, KeyDiagnostic},
   interpolations::{Interpolation, parse_interpolations},
 };
 use std::collections::{BTreeMap, HashMap};
@@ -128,7 +129,7 @@ pub struct Module {
 }
 
 pub fn build_namespaced_module(
-  namespaces: HashMap<String, HashMap<Locale, Value>>,
+  namespaces: HashMap<String, HashMap<Locale, ParsedFile>>,
 ) -> Result<(Module, Diagnostics), WoofError> {
   let mut root_module = Module::default();
   let mut diagnostics = Diagnostics::default();
@@ -143,7 +144,7 @@ pub fn build_namespaced_module(
 }
 
 pub fn build_flat_module(
-  files: HashMap<Locale, Value>,
+  files: HashMap<Locale, ParsedFile>,
 ) -> Result<(Module, Diagnostics), WoofError> {
   let mut diagnostics = Diagnostics::default();
   let root_module = build_root_module(files, &mut diagnostics, vec![])?;
@@ -151,20 +152,21 @@ pub fn build_flat_module(
 }
 
 fn build_root_module(
-  locales: HashMap<Locale, Value>,
+  locales: HashMap<Locale, ParsedFile>,
   diagnostics: &mut Diagnostics,
   path: Vec<&str>,
 ) -> Result<Module, WoofError> {
   let mut root_module = Module::default();
 
-  for (locale, value) in locales {
-    let Value::Table(table) = value else {
+  for (locale, file) in locales {
+    let Value::Table(table) = file.contents else {
       unreachable!("root is always a table");
     };
 
     let mut ctx = Context {
+      normalized_file_path: &file.normalized_path,
       locale: &locale,
-      path: path.clone(),
+      key_path: path.clone(),
       messages: &mut root_module.messages,
       modules: &mut root_module.modules,
       diagnostics,
@@ -183,7 +185,13 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
         let translation = Translation::new(&s);
         let interpolations = parse_interpolations(&translation);
         if !interpolations.errors.is_empty() {
-          ctx.add_interpolation_parse_errors(&key, &s, interpolations.errors);
+          ctx.add_key_diagnostics(
+            &key,
+            KeyDiagnostic::InterpolationErrors {
+              source_code: translation.0,
+              errors: interpolations.errors,
+            },
+          );
         }
 
         let message = ctx.messages.entry(Key::new(&key)).or_default();
@@ -206,7 +214,7 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
             });
 
           if interpolation.type_ != entry.type_ {
-            mismatches.push((interpolation.type_, entry.clone()));
+            mismatches.push((interpolation.name, interpolation.type_, entry.clone()));
             continue;
           }
 
@@ -222,12 +230,13 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
 
       Value::Table(table) => {
         let module = ctx.modules.entry(Key::new(&key)).or_default();
-        let mut path = ctx.path.clone();
-        path.push(&key);
+        let mut key_path = ctx.key_path.clone();
+        key_path.push(&key);
 
         let mut ctx = Context {
           locale: ctx.locale,
-          path,
+          normalized_file_path: ctx.normalized_file_path,
+          key_path,
           messages: &mut module.messages,
           modules: &mut module.modules,
           diagnostics: ctx.diagnostics,
@@ -237,7 +246,12 @@ fn build_module(ctx: &mut Context, table: Table) -> Result<(), WoofError> {
       }
 
       _ => {
-        ctx.add_unsupported_value_type(&key, value.type_str());
+        ctx.add_key_diagnostics(
+          &key,
+          KeyDiagnostic::UnsupportedValueType {
+            value_type: value.type_str().to_string(),
+          },
+        );
         continue;
       }
     }

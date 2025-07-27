@@ -63,22 +63,34 @@ impl InterpolationType {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Error, Diagnostic)]
+#[derive(Debug, Clone, Error, Diagnostic)]
 pub enum InterpolationParseError {
   #[error("Empty interpolation identifier")]
-  #[diagnostic()]
+  #[diagnostic(
+    code(interpolation::empty),
+    help = "Choose a valid name for this interpolation"
+  )]
   Empty(#[label("There should be a name here")] SourceSpan),
 
   #[error("Invalid interpolation identifier")]
-  #[diagnostic()]
+  #[diagnostic(
+    code(interpolation::invalid_ident),
+    help = "Identifiers must be valid javascript variables names"
+  )]
   InvalidIdentifier(#[label("Contains invalid characters")] SourceSpan),
 
   #[error("Unclosed interpolation")]
-  #[diagnostic()]
+  #[diagnostic(
+    code(interpolation::unclosed),
+    help = "Make sure your interpolations are properly closed"
+  )]
   Unclosed(#[label("No closing brace")] SourceSpan),
 
   #[error("Invalid interpolation type")]
-  #[diagnostic()]
+  #[diagnostic(
+    code(interpolation::unsupported_type),
+    help = "Choose a valid interpolation type"
+  )]
   InvalidType {
     #[label("This type is not supported")]
     at: SourceSpan,
@@ -180,6 +192,7 @@ pub fn parse_interpolations(translation: &Translation) -> ParsedInterpolations {
 
             parsing_interpolation = false;
             parsing_type = false;
+            current_name.clear();
             current_type.clear();
             continue;
           }

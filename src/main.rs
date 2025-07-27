@@ -22,19 +22,11 @@ struct Args {
 }
 
 fn main() -> Result<(), WoofError> {
-  let config = Args::parse();
-  let result = collect::collect_and_build_modules(&config.input_dir)?;
+  let args = Args::parse();
+  let result = collect::collect_and_build_modules(&args.input_dir)?;
+  result.diagnostics.report();
 
-  if !result.diagnostics.is_empty() {
-    let handler = miette::GraphicalReportHandler::new().with_show_related_as_nested(true);
-    let mut out = String::new();
-    handler
-      .render_report(&mut out, &result.diagnostics)
-      .unwrap();
-    println!("{}", out);
-  }
-
-  let out = Path::new(&config.out);
+  let out = Path::new(&args.out);
   generate::generate(out, &result.locales, &result.module)?;
 
   Ok(())

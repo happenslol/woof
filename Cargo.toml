@@ -8,6 +8,7 @@ clap = { version = "4.5.39", features = ["derive"] }
 toml = "0.8.22"
 miette = { version = "7.6.0", features = ["fancy"] }
 thiserror = "2.0.12"
+owo-colors = { version = "4.2.2", features = ["supports-colors"] }
 
 [dev-dependencies]
 insta = "1.34"

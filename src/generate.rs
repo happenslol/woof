@@ -76,7 +76,7 @@ fn write_module(dir: &Path, depth: usize, module: &Module, locales: &str) -> Res
         )?;
       }
 
-      write!(&mut f, "}},")?;
+      write!(&mut f, "}}, ")?;
     }
 
     writeln!(&mut f, "locale?: {locales}) => {{")?;
