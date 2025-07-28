@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    branches: [build-ci]
+
+jobs:
+  build:
+    name: Build binaries
+    strategy:
+      matrix:
+        settings:
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            rust-build-env: 'CC_aarch64_unknown_linux_musl=clang AR_aarch64_unknown_linux_musl=llvm-ar RUSTFLAGS="-Clink-self-contained=yes -Clinker=rust-lld"'
+          - host: macos-latest
+            target: x86_64-apple-darwin
+          - host: macos-latest
+            target: aarch64-apple-darwin
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "${{ needs.stage.outputs.stage-branch }}"
+      - name: Setup rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.settings.target }}
+          rustflags: "" # Prevent default override
+      - name: Build
+        run: ${{ matrix.settings.rust-build-env }} cargo build --release --target ${{ matrix.settings.target }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: woof-${{ matrix.settings.target }}
+          path: target/${{ matrix.settings.target }}/release/woof*
