@@ -17,5 +17,5 @@
 
 ## Build
 
-- [ ] Configure static binary build
-- [ ] Build binaries in CI
+- [x] Configure static binary build
+- [x] Build binaries in CI
