@@ -19,3 +19,6 @@
 
 - [x] Configure static binary build
 - [x] Build binaries in CI
+- [ ] Replace binary in postinstall script
+- [ ] Check version when running
+- [ ] Throw incompatible platform error

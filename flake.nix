@@ -50,7 +50,12 @@
       cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     in {
       devShells.default = craneLib.devShell {
-        packages = with pkgs; [cargo-insta rust-analyzer-nightly];
+        packages = with pkgs; [
+          cargo-insta
+          rust-analyzer-nightly
+          nodejs_24
+          zx
+        ];
       };
 
       checks = {
