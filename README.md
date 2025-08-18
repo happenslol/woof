@@ -24,67 +24,7 @@ description = "More details about this website"
 copyright = "Copyright {year:number} by {author}"
 ```
 
-With the files `locales/en.toml` and `locales/de.toml`, running `woof -o messages ./locales` will generate the following:
-
-```typescript
-// messages/index.ts
-let _locale = "en"
-
-export const setLocale = (l: "en" | "de") => (_locale = l)
-export const locale = () => _locale
-
-export * as m from "./root"
-
-// messages/root.ts
-import { locale } from "."
-
-export const title = () => {
-  const l = locale()
-  if (l === "en") return "My Website"
-  if (l === "de") return "Meine Webseite"
-  return "title"
-}
-
-export const description = () => {
-  const l = locale()
-  if (l === "en") return "This is a description"
-  if (l === "de") return "Dies ist eine Beschreibung"
-  return "description"
-}
-
-export * as about from "./about"
-
-// messages/about/index.ts
-import { locale } from ".."
-
-export const title = () => {
-  const l = locale()
-  if (l === "en") return "About"
-  if (l === "de") return "Über"
-  return "about.title"
-}
-
-export const description = () => {
-  const l = locale()
-  if (l === "en") return "More details about this website"
-  if (l === "de") return "Mehr Details über diese Webseite"
-  return "about.description"
-}
-
-export * as more from "./more"
-
-// messages/about/more/index.ts
-import { locale } from "../.."
-
-export const copyright = (year: number, author: string) => {
-  const l = locale()
-  if (l === "en") return `Copyright ${year} by ${author}`
-  if (l === "de") return `Copyright ${year} von ${author}`
-  return `about.more.copyright (year:${year}, author:${author})`
-}
-```
-
-You can then use the translations in your code like this:
+With the files `locales/en.toml` and `locales/de.toml`, running `woof -o messages ./locales` will generate message files that you can use like this:
 
 ```typescript
 import { m } from './messages'
@@ -99,4 +39,25 @@ You can also directory import messages from a sub-directory:
 import * as m from './messages/about/more'
 
 console.log(m.copyright({ year: 2022, author: 'me' })) // "Copyright 2022 by me"
+```
+
+## Setting the Locale
+
+Instead of having a global locale variable, you define a getter that will be used by translations. By default, this is set to a function that returns the default locale.
+
+This allows you to have a global variable, use `AsyncLocalStorage`, or any other mechanism you'd like:
+
+```typescript
+import { setLocaleFn } from "./messages"
+
+// Get it from local storage
+setLocaleFn(() => localStorage.getItem("locale") || "en")
+
+// Use a global variable
+let locale = "en"
+setLocaleFn(() => locale)
+
+// Use async local storage in node
+const localeStorage = new AsyncLocalStorage()
+setLocaleFn(() => localeStorage.getStore() ?? "en")
 ```
